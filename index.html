@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Pom-2 WebOS</title>
@@ -10,83 +9,80 @@
 
 <body>
 
-    <div id="cookieModal" class="hidden">
-        <div class="cookieCard">
-            <p>We use cookies for our site, want a cookie? 🍪</p>
-            <button id="cookieBtn">Accept</button>
+<div id="cookieModal" class="hidden">
+    <div class="cookieCard">
+        <p>We use cookies for our site, want a cookie? 🍪</p>
+        <button id="cookieBtn">Accept</button>
+    </div>
+</div>
+
+<div id="welcome" class="hidden">
+    <div class="solid-white-slant">
+        <h1 class="cursive title">Welcome to Pom-2</h1>
+        <p class="subtitle">A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
+        <p class="cursive pink-text">Made with love by Oxy and Bagel. &lt;3</p>
+        <button onclick="enterOS()" class="coffee-btn">Enter System</button>
+    </div>
+</div>
+
+<div id="desktop" class="hidden">
+
+    <div id="windows">
+        <div class="window hidden" id="notes">
+            <div class="window-header">
+                <span>📝 Notes</span>
+                <button class="close-btn" onclick="closeApp('notes')">✖</button>
+            </div>
+            <div class="window-content light-mode">
+                <textarea placeholder="Write something comfy..."></textarea>
+            </div>
+        </div>
+
+        <div class="window hidden" id="terminal">
+            <div class="window-header">
+                <span>💻 Terminal</span>
+                <button class="close-btn" onclick="closeApp('terminal')">✖</button>
+            </div>
+            <div class="window-content dark-mode">
+                <p>> Pom-2 system online...</p>
+            </div>
+        </div>
+
+        <div class="window hidden" id="explorer">
+            <div class="window-header">
+                <span>📁 Gallery</span>
+                <button class="close-btn" onclick="closeApp('explorer')">✖</button>
+            </div>
+            <div class="window-content file-grid">
+                <div class="file-item" onclick="openImageViewer('static/pomeye.webp')">🖼️ pomeye.webp</div>
+                <div class="file-item" onclick="openImageViewer('static/pomoswallpaper.jpg')">🖼️ pomoswallpaper.jpg</div>
+            </div>
+        </div>
+
+        <div class="window hidden" id="imageViewer">
+            <div class="window-header">
+                <span>🖼️ Image Viewer</span>
+                <button class="close-btn" onclick="closeApp('imageViewer')">✖</button>
+            </div>
+            <div class="window-content img-content">
+                <img id="viewerImg" src="" alt="Viewed Image">
+            </div>
         </div>
     </div>
 
-    <div id="welcome" class="hidden">
-        <div class="solid-white-slant">
-            <h1 class="cursive title">Welcome to Pom-2</h1>
-            <p class="subtitle">A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
-            <p class="cursive pink-text">Made with love by Oxy and Bagel. &lt;3</p>
-            <button onclick="enterOS()" class="coffee-btn">Enter System</button>
+    <div id="taskbar">
+        <div class="logo">Pom-2</div>
+        <div class="apps">
+            <button class="app-icon" onclick="openApp('notes')">📝</button>
+            <button class="app-icon" onclick="openApp('terminal')">💻</button>
+            <button class="app-icon" onclick="openApp('explorer')">📁</button>
+            <div class="divider"></div>
+            <button class="app-icon quit-btn" onclick="quitOS()">🔴</button>
         </div>
     </div>
 
-    <div id="desktop" class="hidden">
+</div>
 
-        <div id="windows">
-
-            <div class="window hidden" id="notes">
-                <div class="window-header">
-                    <span>📝 Notes</span>
-                    <button class="close-btn" onclick="closeApp('notes')">✖</button>
-                </div>
-                <div class="window-content light-mode">
-                    <textarea placeholder="Write something comfy..."></textarea>
-                </div>
-            </div>
-
-            <div class="window hidden" id="terminal">
-                <div class="window-header">
-                    <span>💻 Terminal</span>
-                    <button class="close-btn" onclick="closeApp('terminal')">✖</button>
-                </div>
-                <div class="window-content dark-mode">
-                    <p>> Pom-2 system online...</p>
-                </div>
-            </div>
-
-            <div class="window hidden" id="explorer">
-                <div class="window-header">
-                    <span>📁 File Explorer</span>
-                    <button class="close-btn" onclick="closeApp('explorer')">✖</button>
-                </div>
-                <div class="window-content file-grid">
-                    <div class="file-item" onclick="openImageViewer('static/pomeye.webp')">🖼️ pomeye.webp</div>
-                    <div class="file-item" onclick="openImageViewer('static/pomoswallpaper.jpg')">🖼️ pomoswallpaper.jpg
-                    </div>
-                    <div class="file-item">🎵 login_theme.mp3</div>
-                </div>
-            </div>
-
-            <div class="window hidden" id="imageViewer">
-                <div class="window-header">
-                    <span>🖼️ Image Viewer</span>
-                    <button class="close-btn" onclick="closeApp('imageViewer')">✖</button>
-                </div>
-                <div class="window-content img-content">
-                    <img id="viewerImg" src="" alt="Viewed Image">
-                </div>
-            </div>
-
-        </div>
-
-        <div id="taskbar">
-            <div class="logo">Pom-2</div>
-            <div class="apps">
-                <button class="app-icon" onclick="openApp('notes')">📝</button>
-                <button class="app-icon" onclick="openApp('terminal')">💻</button>
-                <button class="app-icon" onclick="openApp('explorer')">📁</button>
-            </div>
-        </div>
-
-    </div>
-
-    <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
-
 </html>

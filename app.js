@@ -1,50 +1,84 @@
 // --- State & Variables ---
 let highestZIndex = 10;
-let spawnOffset = 0; // Tracks how much to shift the next spawned window
+let spawnOffset = 0;
 
-// Check cookies and session on load
+// --- Audio System ---
+// Assuming these are inside your /static/ folder alongside the images!
+const sfxPowerOn = new Audio('static/Pom-2-power-on.mp3');
+const sfxPowerOff = new Audio('static/Pom-2-power-off.mp3');
+const sfxWinOpen = new Audio('static/Pom-2-window-open.mp3');
+const sfxWinClose = new Audio('static/Pom-2-window-close.mp3');
+
+// --- Boot Sequence ---
 window.onload = function () {
     const hasCookies = localStorage.getItem("cookiesAccepted");
     const hasEntered = localStorage.getItem("systemEntered");
 
-    // If no cookies, show modal immediately
     if (!hasCookies) {
         document.getElementById("cookieModal").classList.remove("hidden");
     } else if (hasCookies && !hasEntered) {
-        // If cookies accepted but not logged in, show welcome screen
         document.getElementById("welcome").classList.remove("hidden");
     } else if (hasCookies && hasEntered) {
-        // If both done, jump straight to desktop
         document.getElementById("desktop").classList.remove("hidden");
+
+        // Note for Evan: Browsers block autoplaying audio on page load if the user
+        // hasn't clicked anywhere yet. If they hard-refresh the page and go straight
+        // to desktop, this might be silent until they click an app.
+        sfxPowerOn.play().catch(e => console.log("Autoplay blocked until user interaction"));
     }
 };
 
-// --- Buttons ---
+// --- Welcome / Login Actions ---
 document.getElementById("cookieBtn").onclick = function () {
     localStorage.setItem("cookiesAccepted", "true");
-    document.getElementById("cookieModal").classList.add("hidden");
-    document.getElementById("welcome").classList.remove("hidden");
+
+    // Smoothly fade out the cookie modal, then hide it entirely
+    const modal = document.getElementById("cookieModal");
+    modal.classList.add("fade-out");
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        document.getElementById("welcome").classList.remove("hidden");
+    }, 300);
 };
 
 function enterOS() {
     localStorage.setItem("systemEntered", "true");
-    document.getElementById("welcome").classList.add("hidden");
+    sfxPowerOn.play(); // Play start sound
+
+    const welcome = document.getElementById("welcome");
     document.getElementById("desktop").classList.remove("hidden");
+
+    // Trigger the fast slide-to-the-left animation in CSS
+    welcome.classList.add("slide-out");
+
+    // Completely hide it from the DOM after the 600ms CSS animation finishes
+    setTimeout(() => {
+        welcome.classList.add("hidden");
+    }, 600);
 }
 
-// --- App Management ---
+function quitOS() {
+    sfxPowerOff.play(); // Play shutdown sound
+
+    // Wait for the sound to play for 1 second, then redirect to Stardance
+    setTimeout(() => {
+        window.location.href = "https://stardance.hackclub.com/";
+    }, 1000);
+}
+
+// --- Window App Management ---
 function openApp(id) {
     const appWindow = document.getElementById(id);
 
-    // Only apply offsets if the window is currently hidden (fresh spawn)
     if (appWindow.classList.contains("hidden")) {
+        sfxWinOpen.play(); // Play window open sound
         appWindow.classList.remove("hidden");
+        appWindow.classList.remove("closing"); // Reset in case it was closed previously
 
-        // Stagger the spawn position so they don't overlap perfectly
+        // Stagger spawn positions
         appWindow.style.top = (80 + spawnOffset) + "px";
         appWindow.style.left = (80 + spawnOffset) + "px";
 
-        // Increase offset for the next window (reset if it gets too big)
         spawnOffset += 30;
         if (spawnOffset > 150) spawnOffset = 0;
     }
@@ -53,26 +87,31 @@ function openApp(id) {
 }
 
 function closeApp(id) {
-    document.getElementById(id).classList.add("hidden");
+    const appWindow = document.getElementById(id);
+    sfxWinClose.play(); // Play window close sound
+
+    // Trigger the CSS closing animation (shrink + fade out)
+    appWindow.classList.add("closing");
+
+    // Wait for the 200ms CSS transition to finish before actually hiding it
+    setTimeout(() => {
+        appWindow.classList.add("hidden");
+    }, 200);
 }
 
-// Opens the image viewer and dynamically changes the image source
 function openImageViewer(imageSrc) {
     const viewerApp = document.getElementById("imageViewer");
     const imgElement = document.getElementById("viewerImg");
-
     imgElement.src = imageSrc;
     openApp("imageViewer");
 }
 
-// Make sure the clicked window always goes over the others
 function bringToFront(element) {
     highestZIndex++;
     element.style.zIndex = highestZIndex;
 }
 
-// --- Window Dragging Logic (Evan, read this!) ---
-// We grab all window elements and apply the drag logic to them
+// --- Window Dragging Logic ---
 const windows = document.querySelectorAll(".window");
 
 windows.forEach(win => {
@@ -81,28 +120,20 @@ windows.forEach(win => {
     let offsetX = 0;
     let offsetY = 0;
 
-    // Bring window to front when clicked anywhere inside it
     win.addEventListener("mousedown", () => bringToFront(win));
 
-    // Start dragging when clicking the header
     header.addEventListener("mousedown", (e) => {
         isDragging = true;
-
-        // Calculate the difference between the mouse click and the window's top-left corner
         offsetX = e.clientX - win.getBoundingClientRect().left;
         offsetY = e.clientY - win.getBoundingClientRect().top;
     });
 
-    // Move the window when the mouse moves (attached to document so it doesn't break if you move the mouse fast)
     document.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
-
-        // Set new position based on mouse position minus the initial offset
         win.style.left = (e.clientX - offsetX) + "px";
         win.style.top = (e.clientY - offsetY) + "px";
     });
 
-    // Stop dragging when mouse is released
     document.addEventListener("mouseup", () => {
         isDragging = false;
     });

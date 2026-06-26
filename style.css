@@ -1,43 +1,41 @@
 /* --- Base Styles & Background --- */
 body {
     margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
     font-family: "Segoe UI", Arial, sans-serif;
-    background: url("static/pomoswallpaper.jpg") center/cover no-repeat;
+    /* Fixed the offset by forcing it to center on the viewport and cover it */
+    background: url("static/pomoswallpaper.jpg") center center / cover no-repeat fixed;
     overflow: hidden;
-    /* Prevents scrollbars when dragging windows out of bounds */
 }
 
-/* Background blur for the OS feel */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    backdrop-filter: blur(12px);
-    background: rgba(20, 15, 10, 0.4);
-    /* Slight warm coffee tint to the blur */
-    z-index: -1;
-}
-
+/* Base hidden class */
 .hidden {
     display: none !important;
-    opacity: 0;
-    pointer-events: none;
 }
 
 .cursive {
     font-family: 'Caveat', cursive;
 }
 
-/* --- Cookie Modal --- */
+/* --- Cookie Modal (Locks everything) --- */
 #cookieModal {
     position: fixed;
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(25px); /* Heavy blur to hide the site until accepted */
     z-index: 9999;
+    transition: opacity 0.3s ease;
+}
+
+/* Added for smooth fade out */
+#cookieModal.fade-out {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .cookieCard {
@@ -48,7 +46,7 @@ body::before {
     border-radius: 18px;
     color: white;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 #cookieBtn {
@@ -57,7 +55,6 @@ body::before {
     border-radius: 12px;
     border: none;
     background: #6F4E37;
-    /* Coffee brown */
     color: white;
     font-weight: bold;
     cursor: pointer;
@@ -74,20 +71,30 @@ body::before {
     inset: 0;
     display: flex;
     z-index: 1000;
+    backdrop-filter: blur(15px); /* Blur is now attached to the welcome screen */
+    background: rgba(20, 15, 10, 0.4);
+
+    /* Fast, snappy slide-out animation setup */
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.5s ease;
 }
 
-/* The solid white angled block */
+/* When enter is clicked, this class gets added to slide it away */
+#welcome.slide-out {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
 .solid-white-slant {
     width: 60%;
     height: 100%;
     background: white;
     clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
-    /* The Slant */
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding-left: 10%;
-    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
 }
 
 .title {
@@ -139,14 +146,14 @@ body::before {
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     padding: 10px 25px;
 
     background: rgba(30, 25, 20, 0.65);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
 .logo {
@@ -154,12 +161,13 @@ body::before {
     font-weight: bold;
     font-size: 1.2rem;
     padding-right: 15px;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255,255,255,0.2);
 }
 
 .apps {
     display: flex;
-    gap: 15px;
+    gap: 10px;
+    align-items: center;
 }
 
 .app-icon {
@@ -167,7 +175,7 @@ body::before {
     height: 45px;
     border-radius: 12px;
     border: none;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255,255,255,0.1);
     color: white;
     font-size: 1.5rem;
     cursor: pointer;
@@ -175,38 +183,52 @@ body::before {
 }
 
 .app-icon:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255,255,255,0.25);
     transform: translateY(-3px);
+}
+
+.divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(255,255,255,0.2);
+    margin: 0 5px;
+}
+
+.quit-btn {
+    background: rgba(200, 50, 50, 0.2);
+}
+
+.quit-btn:hover {
+    background: rgba(200, 50, 50, 0.5);
 }
 
 /* --- Windows --- */
 .window {
     position: absolute;
     width: 380px;
-    background: rgba(245, 245, 245, 0.9);
-    /* Solid enough for contrast */
+    background: rgba(245, 245, 245, 0.95);
     backdrop-filter: blur(25px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 14px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     overflow: hidden;
 
-    /* Pop-in animation */
-    animation: popIn 0.25s ease-out forwards;
+    /* Smooth scaling pop-in */
+    animation: popIn 0.2s ease-out forwards;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+/* Class to trigger when a window closes */
+.window.closing {
+    opacity: 0;
+    transform: scale(0.9);
 }
 
 @keyframes popIn {
-    from {
-        transform: scale(0.95);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .window-header {
@@ -218,7 +240,7 @@ body::before {
     font-weight: bold;
     color: #333;
     cursor: grab;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
 }
 
 .window-header:active {
@@ -230,73 +252,19 @@ body::before {
     border: none;
     color: #888;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.2rem;
 }
 
-.close-btn:hover {
-    color: #d16b8b;
-}
-
-.window-content {
-    padding: 15px;
-    height: 200px;
-    overflow-y: auto;
-}
-
-/* Notes specific */
-.light-mode {
-    background: #fafafa;
-}
-
+.close-btn:hover { color: #d16b8b; }
+.window-content { padding: 15px; height: 200px; overflow-y: auto; }
+.light-mode { background: #fafafa; }
 .light-mode textarea {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    color: #222;
-    font-family: inherit;
-    font-size: 1rem;
-    resize: none;
-    outline: none;
+    width: 100%; height: 100%; background: transparent; border: none;
+    color: #222; font-family: inherit; font-size: 1rem; resize: none; outline: none;
 }
-
-/* Terminal specific */
-.dark-mode {
-    background: #1e1e1e;
-    color: #4af626;
-    font-family: monospace;
-}
-
-/* File Explorer */
-.file-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.file-item {
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
-    cursor: pointer;
-    color: #333;
-}
-
-.file-item:hover {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* Image Viewer */
-.img-content {
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #111;
-}
-
-.img-content img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
+.dark-mode { background: #1e1e1e; color: #4af626; font-family: monospace; }
+.file-grid { display: flex; flex-direction: column; gap: 8px; }
+.file-item { padding: 8px; background: rgba(0,0,0,0.05); border-radius: 8px; cursor: pointer; color: #333; }
+.file-item:hover { background: rgba(0,0,0,0.1); }
+.img-content { padding: 0; display: flex; justify-content: center; align-items: center; background: #111; }
+.img-content img { max-width: 100%; max-height: 100%; object-fit: contain; }
