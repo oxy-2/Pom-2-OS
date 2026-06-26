@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pom-2 WebOS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- cookies -->
+<div id="cookieModal">
+    <div class="cookieCard">
+        <p>We use cookies for our site, want a cookie? 🍪</p>
+
+        <button id="cookieBtn">Accept</button>
+    </div>
+</div>
+
+<!-- welcome -->
+<div id="welcome">
+    <div class="glass">
+
+        <div class="left">
+            <h1>Welcome to Pom-2</h1>
+            <p>A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
+            <p>Made with love by Oxy and Bagel. <3</p>
+
+            <button onclick="enterOS()">Enter System</button>
+        </div>
+
+        <div class="right"></div>
+
+    </div>
+</div>
+
+<!-- desktop -->
+<div id="desktop">
+
+    <div id="taskbar">
+        <div class="logo">Pom-2</div>
+
+        <div class="apps">
+            <button onclick="openApp('notes')">Notes</button>
+            <button onclick="openApp('terminal')">Terminal</button>
+            <button onclick="openApp('gallery')">Gallery</button>
+        </div>
+    </div>
+
+    <!-- windows -->
+    <div id="windows">
+
+        <div class="window hidden" id="notes">
+            <h2>Notes</h2>
+            <textarea placeholder="write something..."></textarea>
+        </div>
+
+        <div class="window hidden" id="terminal">
+            <h2>Terminal</h2>
+            <p>> Pom-2 system online</p>
+        </div>
+
+        <div class="window hidden" id="gallery">
+            <h2>Gallery</h2>
+            <img src="static/pomeye.webp">
+        </div>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
