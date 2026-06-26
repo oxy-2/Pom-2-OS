@@ -1,146 +1,302 @@
+/* --- Base Styles & Background --- */
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     background: url("static/pomoswallpaper.jpg") center/cover no-repeat;
     overflow: hidden;
+    /* Prevents scrollbars when dragging windows out of bounds */
 }
 
-/* soft blur layer */
+/* Background blur for the OS feel */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
-    backdrop-filter: blur(18px);
-    background: rgba(10,10,10,0.35);
+    backdrop-filter: blur(12px);
+    background: rgba(20, 15, 10, 0.4);
+    /* Slight warm coffee tint to the blur */
+    z-index: -1;
 }
 
-/* COOKIE MODAL */
+.hidden {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cursive {
+    font-family: 'Caveat', cursive;
+}
+
+/* --- Cookie Modal --- */
 #cookieModal {
     position: fixed;
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
 }
 
 .cookieCard {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    padding: 20px;
-    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    padding: 25px;
+    border-radius: 18px;
     color: white;
-    width: 320px;
     text-align: center;
-
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.cookieCard button {
-    align-self: center;
-    padding: 8px 16px;
-    border-radius: 10px;
+#cookieBtn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    border-radius: 12px;
     border: none;
+    background: #6F4E37;
+    /* Coffee brown */
+    color: white;
+    font-weight: bold;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-/* WELCOME */
+#cookieBtn:hover {
+    background: #5A3E2A;
+}
+
+/* --- Welcome Screen --- */
 #welcome {
     position: fixed;
     inset: 0;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    z-index: 1000;
 }
 
-.glass {
-    width: 800px;
-    height: 420px;
-    display: flex;
-    border-radius: 18px;
-
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(25px);
-    border: 1px solid rgba(255,255,255,0.15);
-    overflow: hidden;
-}
-
-.left {
-    flex: 1;
-    padding: 40px;
-    color: white;
+/* The solid white angled block */
+.solid-white-slant {
+    width: 60%;
+    height: 100%;
+    background: white;
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+    /* The Slant */
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-left: 10%;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
 }
 
-.right {
-    flex: 1;
-    background: url("static/pomeye.webp") center/cover no-repeat;
+.title {
+    font-size: 4rem;
+    color: #333;
+    margin: 0 0 10px 0;
 }
 
-button {
-    margin-top: 15px;
-    padding: 10px 14px;
-    border-radius: 10px;
+.subtitle {
+    color: #555;
+    font-size: 1.2rem;
+    max-width: 400px;
+}
+
+.pink-text {
+    color: #d16b8b;
+    font-size: 1.8rem;
+    margin: 5px 0 30px 0;
+}
+
+.coffee-btn {
+    width: fit-content;
+    padding: 12px 28px;
+    border-radius: 20px;
     border: none;
+    background: #6F4E37;
+    color: white;
+    font-size: 1.1rem;
     cursor: pointer;
-    background: rgba(255,255,255,0.15);
-    color: white;
+    box-shadow: 0 5px 15px rgba(111, 78, 55, 0.4);
+    transition: transform 0.2s, background 0.2s;
 }
 
-/* DESKTOP */
+.coffee-btn:hover {
+    background: #5A3E2A;
+    transform: translateY(-2px);
+}
+
+/* --- Desktop & Taskbar --- */
 #desktop {
-    display: none;
-    height: 100vh;
-    color: white;
+    position: fixed;
+    inset: 0;
 }
 
-/* TASKBAR */
 #taskbar {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 25px;
 
-    background: rgba(20,20,20,0.5);
-    backdrop-filter: blur(15px);
-    border-top: 1px solid rgba(255,255,255,0.1);
+    background: rgba(30, 25, 20, 0.65);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* WINDOWS */
+.logo {
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding-right: 15px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.apps {
+    display: flex;
+    gap: 15px;
+}
+
+.app-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.app-icon:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-3px);
+}
+
+/* --- Windows --- */
 .window {
     position: absolute;
-    top: 80px;
-    left: 80px;
-
-    width: 300px;
-    height: 220px;
-
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
+    width: 380px;
+    background: rgba(245, 245, 245, 0.9);
+    /* Solid enough for contrast */
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 14px;
-    backdrop-filter: blur(20px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 
-    padding: 12px;
+    /* Pop-in animation */
+    animation: popIn 0.25s ease-out forwards;
 }
 
-.hidden {
-    display: none;
+@keyframes popIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
-textarea {
-    width: 100%;
-    height: 140px;
+.window-header {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: #333;
+    cursor: grab;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.window-header:active {
+    cursor: grabbing;
+}
+
+.close-btn {
     background: transparent;
     border: none;
-    color: white;
+    color: #888;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.close-btn:hover {
+    color: #d16b8b;
+}
+
+.window-content {
+    padding: 15px;
+    height: 200px;
+    overflow-y: auto;
+}
+
+/* Notes specific */
+.light-mode {
+    background: #fafafa;
+}
+
+.light-mode textarea {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: #222;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
     outline: none;
+}
+
+/* Terminal specific */
+.dark-mode {
+    background: #1e1e1e;
+    color: #4af626;
+    font-family: monospace;
+}
+
+/* File Explorer */
+.file-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-item {
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    color: #333;
+}
+
+.file-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Image Viewer */
+.img-content {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+}
+
+.img-content img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }

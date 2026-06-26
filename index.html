@@ -1,74 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Pom-2 WebOS</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<!-- cookies -->
-<div id="cookieModal">
-    <div class="cookieCard">
-        <p>We use cookies for our site, want a cookie? 🍪</p>
-
-        <button id="cookieBtn">Accept</button>
-    </div>
-</div>
-
-<!-- welcome -->
-<div id="welcome">
-    <div class="glass">
-
-        <div class="left">
-            <h1>Welcome to Pom-2</h1>
-            <p>A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
-            <p>Made with love by Oxy and Bagel. <3</p>
-
-            <button onclick="enterOS()">Enter System</button>
-        </div>
-
-        <div class="right"></div>
-
-    </div>
-</div>
-
-<!-- desktop -->
-<div id="desktop">
-
-    <div id="taskbar">
-        <div class="logo">Pom-2</div>
-
-        <div class="apps">
-            <button onclick="openApp('notes')">Notes</button>
-            <button onclick="openApp('terminal')">Terminal</button>
-            <button onclick="openApp('gallery')">Gallery</button>
+    <div id="cookieModal" class="hidden">
+        <div class="cookieCard">
+            <p>We use cookies for our site, want a cookie? 🍪</p>
+            <button id="cookieBtn">Accept</button>
         </div>
     </div>
 
-    <!-- windows -->
-    <div id="windows">
+    <div id="welcome" class="hidden">
+        <div class="solid-white-slant">
+            <h1 class="cursive title">Welcome to Pom-2</h1>
+            <p class="subtitle">A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
+            <p class="cursive pink-text">Made with love by Oxy and Bagel. &lt;3</p>
+            <button onclick="enterOS()" class="coffee-btn">Enter System</button>
+        </div>
+    </div>
 
-        <div class="window hidden" id="notes">
-            <h2>Notes</h2>
-            <textarea placeholder="write something..."></textarea>
+    <div id="desktop" class="hidden">
+
+        <div id="windows">
+
+            <div class="window hidden" id="notes">
+                <div class="window-header">
+                    <span>📝 Notes</span>
+                    <button class="close-btn" onclick="closeApp('notes')">✖</button>
+                </div>
+                <div class="window-content light-mode">
+                    <textarea placeholder="Write something comfy..."></textarea>
+                </div>
+            </div>
+
+            <div class="window hidden" id="terminal">
+                <div class="window-header">
+                    <span>💻 Terminal</span>
+                    <button class="close-btn" onclick="closeApp('terminal')">✖</button>
+                </div>
+                <div class="window-content dark-mode">
+                    <p>> Pom-2 system online...</p>
+                </div>
+            </div>
+
+            <div class="window hidden" id="explorer">
+                <div class="window-header">
+                    <span>📁 File Explorer</span>
+                    <button class="close-btn" onclick="closeApp('explorer')">✖</button>
+                </div>
+                <div class="window-content file-grid">
+                    <div class="file-item" onclick="openImageViewer('static/pomeye.webp')">🖼️ pomeye.webp</div>
+                    <div class="file-item" onclick="openImageViewer('static/pomoswallpaper.jpg')">🖼️ pomoswallpaper.jpg
+                    </div>
+                    <div class="file-item">🎵 login_theme.mp3</div>
+                </div>
+            </div>
+
+            <div class="window hidden" id="imageViewer">
+                <div class="window-header">
+                    <span>🖼️ Image Viewer</span>
+                    <button class="close-btn" onclick="closeApp('imageViewer')">✖</button>
+                </div>
+                <div class="window-content img-content">
+                    <img id="viewerImg" src="" alt="Viewed Image">
+                </div>
+            </div>
+
         </div>
 
-        <div class="window hidden" id="terminal">
-            <h2>Terminal</h2>
-            <p>> Pom-2 system online</p>
-        </div>
-
-        <div class="window hidden" id="gallery">
-            <h2>Gallery</h2>
-            <img src="static/pomeye.webp">
+        <div id="taskbar">
+            <div class="logo">Pom-2</div>
+            <div class="apps">
+                <button class="app-icon" onclick="openApp('notes')">📝</button>
+                <button class="app-icon" onclick="openApp('terminal')">💻</button>
+                <button class="app-icon" onclick="openApp('explorer')">📁</button>
+            </div>
         </div>
 
     </div>
 
-</div>
-
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
