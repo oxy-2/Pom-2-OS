@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Pom-2 WebOS</title>
@@ -8,81 +9,138 @@
 </head>
 
 <body>
-
-<div id="cookieModal" class="hidden">
-    <div class="cookieCard">
-        <p>We use cookies for our site, want a cookie? 🍪</p>
-        <button id="cookieBtn">Accept</button>
-    </div>
-</div>
-
-<div id="welcome" class="hidden">
-    <div class="solid-white-slant">
-        <h1 class="cursive title">Welcome to Pom-2</h1>
-        <p class="subtitle">A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
-        <p class="cursive pink-text">Made with love by Oxy and Bagel. &lt;3</p>
-        <button onclick="enterOS()" class="coffee-btn">Enter System</button>
-    </div>
-</div>
-
-<div id="desktop" class="hidden">
-
-    <div id="windows">
-        <div class="window hidden" id="notes">
-            <div class="window-header">
-                <span>📝 Notes</span>
-                <button class="close-btn" onclick="closeApp('notes')">✖</button>
-            </div>
-            <div class="window-content light-mode">
-                <textarea placeholder="Write something joyus and full of joy..."></textarea>
-            </div>
-        </div>
-
-        <div class="window hidden" id="terminal">
-            <div class="window-header">
-                <span>💻 Terminal</span>
-                <button class="close-btn" onclick="closeApp('terminal')">✖</button>
-            </div>
-            <div class="window-content dark-mode">
-                <p>> Pom-2 system online...</p>
-            </div>
-        </div>
-
-        <div class="window hidden" id="explorer">
-            <div class="window-header">
-                <span>📁 Gallery</span>
-                <button class="close-btn" onclick="closeApp('explorer')">✖</button>
-            </div>
-            <div class="window-content file-grid">
-                <div class="file-item" onclick="openImageViewer('static/pomeye.webp')">🖼️ pomeye.webp</div>
-                <div class="file-item" onclick="openImageViewer('static/pomoswallpaper.jpg')">🖼️ pomoswallpaper.jpg</div>
-            </div>
-        </div>
-
-        <div class="window hidden" id="imageViewer">
-            <div class="window-header">
-                <span>🖼️ Image Viewer</span>
-                <button class="close-btn" onclick="closeApp('imageViewer')">✖</button>
-            </div>
-            <div class="window-content img-content">
-                <img id="viewerImg" src="" alt="Viewed Image">
-            </div>
+    <div id="cookieModal" class="hidden">
+        <div class="cookieCard">
+            <p>We use cookies for our site, want a cookie? 🍪</p>
+            <button id="cookieBtn">Accept</button>
         </div>
     </div>
 
-    <div id="taskbar">
-        <div class="logo">Pom-2</div>
-        <div class="apps">
-            <button class="app-icon" onclick="openApp('notes')">📝</button>
-            <button class="app-icon" onclick="openApp('terminal')">💻</button>
-            <button class="app-icon" onclick="openApp('explorer')">📁</button>
-            <div class="divider"></div>
-            <button class="app-icon quit-btn" onclick="quitOS()">🔴</button>
+    <div id="welcome" class="hidden">
+        <div class="solid-white-slant">
+            <h1 class="cursive title">Welcome to Pom-2</h1>
+            <p class="subtitle">A cozy WebOS inspired by Warframe's Pom-2 computer interface.</p>
+            <p class="cursive pink-text">Made with love by Oxy and Bagel. &lt;3</p>
+            <button onclick="enterOS()" class="coffee-btn">Enter System</button>
         </div>
     </div>
 
-</div>
+    <div id="desktop" class="hidden">
 
-<script src="app.js"></script>
+        <div id="windows">
+            <div class="window hidden" id="notes">
+                <div class="window-header">
+                    <span>📝 Notes</span>
+                    <button class="close-btn" onclick="closeApp('notes')">✖</button>
+                </div>
+                <div class="window-content notes-layout">
+                    <div class="notes-sidebar">
+                        <button class="new-note-btn" onclick="createNewNote()">+ New Note</button>
+                        <div id="notesList"></div>
+                    </div>
+                    <div class="notes-editor">
+                        <input type="hidden" id="currentNoteId">
+                        <input type="text" id="noteTitle" placeholder="Note Title...">
+                        <textarea id="noteBody" placeholder="Write something comfy..."></textarea>
+                        <button class="save-note-btn" onclick="saveNote()">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="window hidden" id="terminal">
+                <div class="window-header">
+                    <span>💻 Terminal</span>
+                    <button class="close-btn" onclick="closeApp('terminal')">✖</button>
+                </div>
+                <div class="window-content terminal-mode" id="terminalContent"
+                    onclick="document.getElementById('termInput').focus()">
+                    <div id="termOutput">
+                        <div>> Pom-2 system online...</div>
+                        <div>> Type 'help' for a list of commands.</div>
+                    </div>
+                    <div class="term-input-line">
+                        <span>oxy@pom-2:~$</span>
+                        <input type="text" id="termInput" autocomplete="off" spellcheck="false">
+                    </div>
+                </div>
+            </div>
+
+            <div class="window hidden" id="explorer">
+                <div class="window-header">
+                    <span>📁 Gallery</span>
+                    <button class="close-btn" onclick="closeApp('explorer')">✖</button>
+                </div>
+                <div class="window-content file-grid">
+                    <div class="file-item" onclick="openImageViewer('static/pomeye.webp', 'img-pomeye', 'pomeye.webp')">
+                        🖼️ pomeye.webp</div>
+                    <div class="file-item"
+                        onclick="openImageViewer('static/pomoswallpaper.jpg', 'img-wall', 'pomoswallpaper.jpg')">🖼️
+                        pomoswallpaper.jpg</div>
+                </div>
+            </div>
+
+            <div class="window hidden" id="music">
+                <div class="window-header">
+                    <span>🎵 Tunes</span>
+                    <button class="close-btn" onclick="closeApp('music')">✖</button>
+                </div>
+                <div class="window-content file-grid">
+                    <div class="file-item" onclick="playMusic('partyofyourlifetime')">🎵 Party of Your Lifetime -
+                        on-lyne</div>
+                    <div class="file-item" onclick="playMusic('thegreatdespair')">🎵 The Great Despair - on-lyne</div>
+                </div>
+            </div>
+
+            <template id="imageViewerTemplate">
+                <div class="window img-viewer-window">
+                    <div class="window-header">
+                        <span class="viewer-title">🖼️ Image Viewer</span>
+                        <button class="close-btn" onclick="closeDynamicApp(this)">✖</button>
+                    </div>
+                    <div class="window-content img-content">
+                        <img src="" alt="Viewed Image">
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div id="taskbar">
+            <div class="logo">Pom-2</div>
+            <div class="apps">
+                <button class="app-icon" onclick="openApp('notes')">📝</button>
+                <button class="app-icon" onclick="openApp('terminal')">💻</button>
+                <button class="app-icon" onclick="openApp('explorer')">📁</button>
+                <button class="app-icon" onclick="openApp('music')">🎵</button>
+                <div class="divider"></div>
+                <button class="app-icon quit-btn" onclick="quitOS()">🔴</button>
+            </div>
+        </div>
+
+        <div id="miniPlayer" class="hidden">
+            <div class="player-info">
+                <div class="visualizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+                <div class="track-details">
+                    <span id="playerTitle">No Track</span>
+                    <span id="playerArtist">System</span>
+                </div>
+            </div>
+            <div class="player-controls">
+                <button onclick="seekAudio(-10)">⏪</button>
+                <button id="playPauseBtn" onclick="togglePlayPause()">⏸</button>
+                <button onclick="seekAudio(10)">⏩</button>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5"
+                    onchange="updateMusicVolume(this.value)">
+            </div>
+            <audio id="musicAudioPlayer" onended="musicEnded()"></audio>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
 </body>
+
 </html>

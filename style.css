@@ -1,16 +1,14 @@
-/* --- Base Styles & Background --- */
+/* --- Base Styles --- */
 body {
     margin: 0;
     padding: 0;
     width: 100vw;
     height: 100vh;
     font-family: "Segoe UI", Arial, sans-serif;
-    /* Fixed the offset by forcing it to center on the viewport and cover it */
     background: url("static/pomoswallpaper.jpg") center center / cover no-repeat fixed;
     overflow: hidden;
 }
 
-/* Base hidden class */
 .hidden {
     display: none !important;
 }
@@ -19,7 +17,7 @@ body {
     font-family: 'Caveat', cursive;
 }
 
-/* --- Cookie Modal (Locks everything) --- */
+/* --- Cookie Modal --- */
 #cookieModal {
     position: fixed;
     inset: 0;
@@ -27,12 +25,11 @@ body {
     justify-content: center;
     align-items: center;
     background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(25px); /* Heavy blur to hide the site until accepted */
+    backdrop-filter: blur(25px);
     z-index: 9999;
     transition: opacity 0.3s ease;
 }
 
-/* Added for smooth fade out */
 #cookieModal.fade-out {
     opacity: 0;
     pointer-events: none;
@@ -46,7 +43,7 @@ body {
     border-radius: 18px;
     color: white;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 #cookieBtn {
@@ -71,14 +68,11 @@ body {
     inset: 0;
     display: flex;
     z-index: 1000;
-    backdrop-filter: blur(15px); /* Blur is now attached to the welcome screen */
+    backdrop-filter: blur(15px);
     background: rgba(20, 15, 10, 0.4);
-
-    /* Fast, snappy slide-out animation setup */
     transition: transform 0.6s cubic-bezier(0.25, 1, 0.3, 1), opacity 0.5s ease;
 }
 
-/* When enter is clicked, this class gets added to slide it away */
 #welcome.slide-out {
     transform: translateX(-100%);
     opacity: 0;
@@ -94,7 +88,7 @@ body {
     flex-direction: column;
     justify-content: center;
     padding-left: 10%;
-    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
 }
 
 .title {
@@ -148,12 +142,12 @@ body {
     align-items: center;
     gap: 15px;
     padding: 10px 25px;
-
     background: rgba(30, 25, 20, 0.65);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    z-index: 9000;
 }
 
 .logo {
@@ -161,7 +155,7 @@ body {
     font-weight: bold;
     font-size: 1.2rem;
     padding-right: 15px;
-    border-right: 1px solid rgba(255,255,255,0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .apps {
@@ -175,7 +169,7 @@ body {
     height: 45px;
     border-radius: 12px;
     border: none;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     color: white;
     font-size: 1.5rem;
     cursor: pointer;
@@ -183,14 +177,14 @@ body {
 }
 
 .app-icon:hover {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.25);
     transform: translateY(-3px);
 }
 
 .divider {
     width: 1px;
     height: 30px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     margin: 0 5px;
 }
 
@@ -205,30 +199,34 @@ body {
 /* --- Windows --- */
 .window {
     position: absolute;
-    width: 380px;
+    width: 450px;
     background: rgba(245, 245, 245, 0.95);
     backdrop-filter: blur(25px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 14px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-
-    /* Smooth scaling pop-in */
     animation: popIn 0.2s ease-out forwards;
     transition: opacity 0.2s, transform 0.2s;
 }
 
-/* Class to trigger when a window closes */
 .window.closing {
     opacity: 0;
     transform: scale(0.9);
 }
 
 @keyframes popIn {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .window-header {
@@ -240,7 +238,7 @@ body {
     font-weight: bold;
     color: #333;
     cursor: grab;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .window-header:active {
@@ -255,16 +253,270 @@ body {
     font-size: 1.2rem;
 }
 
-.close-btn:hover { color: #d16b8b; }
-.window-content { padding: 15px; height: 200px; overflow-y: auto; }
-.light-mode { background: #fafafa; }
-.light-mode textarea {
-    width: 100%; height: 100%; background: transparent; border: none;
-    color: #222; font-family: inherit; font-size: 1rem; resize: none; outline: none;
+.close-btn:hover {
+    color: #d16b8b;
 }
-.dark-mode { background: #1e1e1e; color: #4af626; font-family: monospace; }
-.file-grid { display: flex; flex-direction: column; gap: 8px; }
-.file-item { padding: 8px; background: rgba(0,0,0,0.05); border-radius: 8px; cursor: pointer; color: #333; }
-.file-item:hover { background: rgba(0,0,0,0.1); }
-.img-content { padding: 0; display: flex; justify-content: center; align-items: center; background: #111; }
-.img-content img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.window-content {
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* File Explorer */
+.file-grid {
+    padding: 15px;
+    gap: 8px;
+}
+
+.file-item {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    color: #333;
+    transition: 0.1s;
+}
+
+.file-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: translateX(5px);
+}
+
+/* Image Viewer */
+.img-content {
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+    height: auto;
+    min-height: 250px;
+}
+
+.img-content img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+/* Notes App */
+.notes-layout {
+    flex-direction: row;
+    height: 300px;
+    padding: 0;
+}
+
+.notes-sidebar {
+    width: 35%;
+    background: rgba(0, 0, 0, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.notes-editor {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background: #fafafa;
+}
+
+.new-note-btn,
+.save-note-btn {
+    background: #6F4E37;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.new-note-btn:hover,
+.save-note-btn:hover {
+    background: #5A3E2A;
+}
+
+.note-list-item {
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.note-list-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+#noteTitle {
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    outline: none;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+#noteBody {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    color: #222;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
+    outline: none;
+}
+
+/* Terminal App */
+.terminal-mode {
+    background: #2a1e17;
+    /* Dark Espresso */
+    color: #b5e8b5;
+    /* Soft Matcha Green */
+    font-family: 'Consolas', monospace;
+    padding: 15px;
+    font-size: 0.95rem;
+    cursor: text;
+}
+
+#termOutput div {
+    margin-bottom: 5px;
+    word-wrap: break-word;
+}
+
+.term-input-line {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+#termInput {
+    background: transparent;
+    border: none;
+    color: #b5e8b5;
+    font-family: inherit;
+    font-size: inherit;
+    outline: none;
+    flex-grow: 1;
+}
+
+/* Mini Music Player */
+#miniPlayer {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 280px;
+    background: rgba(30, 25, 20, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 15px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 8000;
+    animation: popIn 0.3s ease-out forwards;
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.track-details {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#playerTitle {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+#playerArtist {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.player-controls button {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: 0.2s;
+}
+
+.player-controls button:hover {
+    color: #d16b8b;
+}
+
+#volumeSlider {
+    width: 80px;
+    cursor: pointer;
+    accent-color: #d16b8b;
+}
+
+/* Visualizer Animation */
+.visualizer {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 20px;
+}
+
+.bar {
+    width: 4px;
+    background: #d16b8b;
+    border-radius: 2px;
+    height: 5px;
+    transition: height 0.1s;
+}
+
+.playing .bar:nth-child(1) {
+    animation: bounce 1s infinite alternate;
+}
+
+.playing .bar:nth-child(2) {
+    animation: bounce 1.2s infinite alternate-reverse;
+}
+
+.playing .bar:nth-child(3) {
+    animation: bounce 0.8s infinite alternate;
+}
+
+@keyframes bounce {
+    from {
+        height: 5px;
+    }
+
+    to {
+        height: 20px;
+    }
+}
