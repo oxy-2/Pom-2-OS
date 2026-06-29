@@ -520,3 +520,48 @@ body {
         height: 20px;
     }
 }
+
+/* --- Windows --- */
+.window {
+    position: absolute;
+    width: 580px; /* Expanded from 450px so your terminal art fits perfectly */
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; overflow: hidden;
+    /* Mac-style bouncy pop-in */
+    animation: macPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.window.closing {
+    /* Smooth shrink pop-out */
+    animation: macPopOut 0.2s cubic-bezier(0.4, 0.0, 1, 1) forwards;
+}
+
+@keyframes macPopIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+@keyframes macPopOut {
+    from { transform: scale(1); opacity: 1; }
+    to { transform: scale(0.85); opacity: 0; }
+}
+
+.window-header {
+    background: rgba(0, 0, 0, 0.05); padding: 10px 15px; display: flex;
+    justify-content: space-between; align-items: center; font-weight: bold; color: #333;
+    cursor: grab; border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.window-header:active { cursor: grabbing; }
+.close-btn { background: transparent; border: none; color: #888; cursor: pointer; font-size: 1.2rem; }
+.close-btn:hover { color: #d16b8b; }
+.window-content { height: 250px; display: flex; flex-direction: column; overflow-y: auto; }
+
+/* ... (Keep your File Explorer, Image Viewer, and Notes App CSS exactly the same as before) ... */
+
+/* Update this specific terminal rule so the ASCII spaces are respected */
+#termOutput div {
+    margin-bottom: 5px;
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Forces the browser to respect your ASCII spacing */
+}

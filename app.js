@@ -243,10 +243,10 @@ function processCommand(cmdLine) {
             break;
         case 'fetch':
             printTerm(`
-   ___                  <span style="color:#fff">Pom-2 WebOS v1.2</span>
-  / _ /                 <span style="color:#d16b8b">User:</span> root
- /__ / ___  /\  /\  _      <span style="color:#d16b8b">Kernel:</span> Pom-OS
-//    /__/ // \/ \\     <span style="color:#d16b8b">Hardware:</span> el browser
+   ___                   ._____        <span style="color:#fff">Pom-2 WebOS v1.2</span>
+  / _ /                 ./ / | |      <span style="color:#d16b8b">User:</span> root
+ /_-_/ ___  /|. /||  ==   ../ /       <span style="color:#d16b8b">Kernel:</span> Pom-OS
+//    /__/ //.\/..||     .__/_/__      <span style="color:#d16b8b">Hardware:</span> el browser
             `);
             break;
         default:
@@ -259,6 +259,28 @@ const musicData = {
     'partyofyourlifetime': { src: 'static/partyofyourlifetime.mp3', artist: 'on-lyne', title: 'Party of Your Lifetime' },
     'thegreatdespair': { src: 'static/thegreatdespair.mp3', artist: 'on-lyne', title: 'The Great Despair' }
 };
+
+// --- Window App Management ---
+function openApp(id) {
+    const appWindow = document.getElementById(id);
+    if (!appWindow) return;
+
+    // Toggle behavior: If it's already open, close it
+    if (!appWindow.classList.contains("hidden") && !appWindow.classList.contains("closing")) {
+        closeApp(id);
+        return;
+    }
+
+    if (appWindow.classList.contains("hidden")) {
+        sfxWinOpen.play();
+        appWindow.classList.remove("hidden");
+        appWindow.classList.remove("closing");
+        appWindow.style.top = (80 + spawnOffset) + "px";
+        appWindow.style.left = (80 + spawnOffset) + "px";
+        spawnOffset = (spawnOffset > 150) ? 0 : spawnOffset + 30;
+    }
+    bringToFront(appWindow);
+}
 
 const audioPlayer = document.getElementById('musicAudioPlayer');
 const miniPlayer = document.getElementById('miniPlayer');
