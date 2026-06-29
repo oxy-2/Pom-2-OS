@@ -243,10 +243,10 @@ function processCommand(cmdLine) {
             break;
         case 'fetch':
             printTerm(`
-&nbsp;&nbsp;&nbsp;,--.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#fff">Pom-2 WebOS v1.0</span>
-&nbsp;&nbsp;()&nbsp;&nbsp;&nbsp;\\&nbsp;&nbsp;&nbsp;<span style="color:#d16b8b">User:</span> oxy
-&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;\\&nbsp;&nbsp;<span style="color:#d16b8b">Kernel:</span> Klipper-PomOS
-&nbsp;_/______\\_<span style="color:#d16b8b">Hardware:</span> OCuLink Node / Custom PCVR
+   ___                  <span style="color:#fff">Pom-2 WebOS v1.2</span>
+  / _ /                 <span style="color:#d16b8b">User:</span> root
+ /__ / ___  /\  /\  _      <span style="color:#d16b8b">Kernel:</span> Pom-OS
+//    /__/ // \/ \\     <span style="color:#d16b8b">Hardware:</span> el browser
             `);
             break;
         default:
