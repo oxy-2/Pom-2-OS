@@ -11,6 +11,7 @@ Here's what I have added so far:
 * you can exit the OS and go back to Stardance's like home page
 * a music app that plays music and has a popup that can seek pause etc
 * a very simple settings app
+* a game app where you can play pong :O
 * I also added a cookie consent popup since I'm assuming people don't want their data tracked
 
 I'm planning to add more stuff but for now this is what I have.

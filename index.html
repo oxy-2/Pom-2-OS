@@ -36,7 +36,8 @@
                 </div>
                 <div class="window-content settings-layout">
                     <h3>System Hardware</h3>
-                    <p>CPU: Inshell core i9 14900k<br>GPU: Nbidia RTX 4070<br>Display: Acor 1920x1080 165hz</p>
+                    <p>CPU: Inshell core i9 14900k<br>GPU: Nvillia RTX 4070<br>Display: Generic PnP Monitor 1920x1080
+                    </p>
                     <div class="settings-divider"></div>
                     <h3>System SFX Volume</h3>
                     <input type="range" id="sysVolumeSlider" min="0" max="1" step="0.1" value="0.5"
@@ -106,6 +107,16 @@
                 </div>
             </div>
 
+            <div class="window hidden pong-window" id="pongApp">
+                <div class="window-header">
+                    <span>🏓 Pong</span>
+                    <button class="close-btn" onclick="closeApp('pongApp')">✖</button>
+                </div>
+                <div class="window-content pong-content">
+                    <canvas id="pongCanvas" width="500" height="350"></canvas>
+                </div>
+            </div>
+
             <template id="imageViewerTemplate">
                 <div class="window img-viewer-window">
                     <div class="window-header">
@@ -126,6 +137,7 @@
                 <button class="app-icon" onclick="openApp('terminal')">💻</button>
                 <button class="app-icon" onclick="openApp('explorer')">📁</button>
                 <button class="app-icon" onclick="openApp('music')">🎵</button>
+                <button class="app-icon" onclick="openApp('pongApp')">🏓</button>
                 <button class="app-icon" onclick="openApp('settings')">⚙️</button>
                 <div class="divider"></div>
                 <button class="app-icon quit-btn" onclick="quitOS()">🔴</button>

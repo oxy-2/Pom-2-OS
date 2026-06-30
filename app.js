@@ -10,6 +10,8 @@ const sfxWinOpen = new Audio('static/Pom-2-window-open.mp3');
 const sfxWinClose = new Audio('static/Pom-2-window-close.mp3'); 
 const sfxTyping = new Audio('static/typing.m4a'); // New Typing Sound
 sfxTyping.loop = true; // Loop while typing
+const sfxMessage = new Audio('static/Pom-2-Message-received.mp3'); // Terminal sound
+const sfxPong = new Audio('static/pong.wav'); // Pong hit sound
 
 function updateSysVolume(val) {
     systemVolume = parseFloat(val);
@@ -18,6 +20,8 @@ function updateSysVolume(val) {
     sfxWinOpen.volume = systemVolume;
     sfxWinClose.volume = systemVolume;
     sfxTyping.volume = systemVolume;
+    sfxMessage.volume = systemVolume;
+    sfxPong.volume = systemVolume;
 }
 
 // Set initial volumes
@@ -256,6 +260,10 @@ function printTerm(text, color = "#b5e8b5") {
     div.innerHTML = text;
     div.style.color = color;
     termOutput.appendChild(div);
+    
+    // Play terminal message sound
+    sfxMessage.currentTime = 0;
+    sfxMessage.play().catch(e => null);
 }
 
 function processCommand(cmdLine) {
@@ -371,3 +379,136 @@ function musicEnded() {
     visualizer.classList.remove('playing');
     playPauseBtn.innerText = "▶";
 }
+
+// --- Pong App Logic ---
+const pongCanvas = document.getElementById('pongCanvas');
+const pongCtx = pongCanvas.getContext('2d');
+
+let pongLoop;
+let pongScore = 0;
+
+const pongPlayer = { y: 150, width: 10, height: 60, speed: 0 };
+const pongBot = { y: 150, width: 10, height: 60, maxSpeed: 4 };
+const ball = { x: 250, y: 175, radius: 6, vx: 5, vy: 5, speed: 5 };
+
+// Drag handling for player
+let isPongDragging = false;
+pongCanvas.addEventListener('mousedown', (e) => { isPongDragging = true; updatePlayerPos(e); });
+document.addEventListener('mousemove', (e) => { if (isPongDragging) updatePlayerPos(e); });
+document.addEventListener('mouseup', () => isPongDragging = false);
+
+pongCanvas.addEventListener('touchstart', (e) => { isPongDragging = true; updatePlayerPos(e.touches[0]); }, {passive: false});
+document.addEventListener('touchmove', (e) => {
+    if (isPongDragging) {
+        const openWin = document.getElementById('pongApp');
+        if (!openWin.classList.contains('hidden')) e.preventDefault(); // Stop mobile screen scrolling
+        updatePlayerPos(e.touches[0]);
+    }
+}, {passive: false});
+document.addEventListener('touchend', () => isPongDragging = false);
+
+function updatePlayerPos(e) {
+    const rect = pongCanvas.getBoundingClientRect();
+    let y = e.clientY - rect.top;
+    // Center paddle on cursor/finger
+    pongPlayer.y = y - pongPlayer.height / 2;
+    // Screen bounds
+    if (pongPlayer.y < 0) pongPlayer.y = 0;
+    if (pongPlayer.y > pongCanvas.height - pongPlayer.height) pongPlayer.y = pongCanvas.height - pongPlayer.height;
+}
+
+function resetBall() {
+    ball.x = pongCanvas.width / 2;
+    ball.y = pongCanvas.height / 2;
+    ball.vx = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+    ball.vy = (Math.random() * 2 - 1) * ball.speed;
+}
+
+function updatePong() {
+    // Move Bot (fair tracking logic)
+    const botCenter = pongBot.y + pongBot.height / 2;
+    if (botCenter < ball.y - 10) {
+        pongBot.y += pongBot.maxSpeed;
+    } else if (botCenter > ball.y + 10) {
+        pongBot.y -= pongBot.maxSpeed;
+    }
+    if (pongBot.y < 0) pongBot.y = 0;
+    if (pongBot.y > pongCanvas.height - pongBot.height) pongBot.y = pongCanvas.height - pongBot.height;
+
+    // Move ball
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    // Top/bottom wall collisions
+    if (ball.y - ball.radius < 0 || ball.y + ball.radius > pongCanvas.height) {
+        ball.vy = -ball.vy;
+    }
+
+    // Player Paddle Collision (Left side)
+    if (ball.vx < 0 && ball.x - ball.radius <= 20 + pongPlayer.width && ball.y >= pongPlayer.y && ball.y <= pongPlayer.y + pongPlayer.height) {
+        ball.vx = -ball.vx;
+        ball.vx += 0.5; // Slight speed up on rally
+        pongScore++; // Increase volley score
+        sfxPong.currentTime = 0;
+        sfxPong.play().catch(e=>null);
+    }
+    
+    // Bot Paddle Collision (Right side)
+    const botX = pongCanvas.width - 30;
+    if (ball.vx > 0 && ball.x + ball.radius >= botX && ball.y >= pongBot.y && ball.y <= pongBot.y + pongBot.height) {
+        ball.vx = -ball.vx;
+        ball.vx -= 0.5; // Slight speed up on rally
+        sfxPong.currentTime = 0;
+        sfxPong.play().catch(e=>null);
+    }
+
+    // Out of bounds / Scoring resets
+    if (ball.x < 0) {
+        pongScore = 0; // Player missed, reset score
+        resetBall();
+    } else if (ball.x > pongCanvas.width) {
+        resetBall(); // Bot missed (unlikely, but just in case)
+    }
+}
+
+function drawPong() {
+    // Clear canvas
+    pongCtx.fillStyle = '#111';
+    pongCtx.fillRect(0, 0, pongCanvas.width, pongCanvas.height);
+    
+    // Center dashed line
+    pongCtx.setLineDash([10, 15]);
+    pongCtx.beginPath();
+    pongCtx.moveTo(pongCanvas.width / 2, 0);
+    pongCtx.lineTo(pongCanvas.width / 2, pongCanvas.height);
+    pongCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    pongCtx.stroke();
+
+    // Score display
+    pongCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    pongCtx.font = '40px monospace';
+    pongCtx.fillText(pongScore, pongCanvas.width / 2 - 40, 50);
+
+    // Draw paddles
+    pongCtx.fillStyle = '#fff';
+    pongCtx.fillRect(20, pongPlayer.y, pongPlayer.width, pongPlayer.height);
+    pongCtx.fillRect(pongCanvas.width - 30, pongBot.y, pongBot.width, pongBot.height);
+
+    // Draw ball
+    pongCtx.beginPath();
+    pongCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    pongCtx.fill();
+}
+
+function loopPong() {
+    const app = document.getElementById('pongApp');
+    if (!app.classList.contains('hidden') && !app.classList.contains('closing')) {
+        updatePong();
+        drawPong();
+    }
+    pongLoop = requestAnimationFrame(loopPong);
+}
+
+// Start loop when pong is loaded
+resetBall();
+loopPong();

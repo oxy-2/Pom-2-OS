@@ -592,6 +592,28 @@ input, textarea { font-size: 16px !important; }
 /* Ensure the content stretches when you resize the window */
 .window-content { flex-grow: 1; height: 100%; display: flex; flex-direction: column; overflow-y: auto; }
 
+/* --- Pong App --- */
+.pong-window {
+    width: auto !important; /* Override flexible width */
+    max-width: none !important;
+    resize: none !important; /* Not resizable */
+    min-width: 500px;
+}
+.pong-content {
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    overflow: hidden;
+    height: 350px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+}
+#pongCanvas {
+    background: #000;
+    display: block;
+}
+
 /* --- Settings App Layout --- */
 .settings-layout { padding: 20px; background: #fafafa; color: #333; }
 .settings-layout h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
