@@ -1,13 +1,46 @@
 // --- State & Variables ---
 let highestZIndex = 10;
 let spawnOffset = 0;
-let systemVolume = 0.5; // Base volume set to 50%
+let systemVolume = 0.5; // Base SFX volume
 
 // --- Audio System Setup ---
-const sfxPowerOn = new Audio('static/Pom-2-power-on.mp3'); sfxPowerOn.volume = systemVolume;
-const sfxPowerOff = new Audio('static/Pom-2-power-off.mp3'); sfxPowerOff.volume = systemVolume;
-const sfxWinOpen = new Audio('static/Pom-2-window-open.mp3'); sfxWinOpen.volume = systemVolume;
-const sfxWinClose = new Audio('static/Pom-2-window-close.mp3'); sfxWinClose.volume = systemVolume;
+const sfxPowerOn = new Audio('static/Pom-2-power-on.mp3'); 
+const sfxPowerOff = new Audio('static/Pom-2-power-off.mp3'); 
+const sfxWinOpen = new Audio('static/Pom-2-window-open.mp3'); 
+const sfxWinClose = new Audio('static/Pom-2-window-close.mp3'); 
+const sfxTyping = new Audio('static/typing.m4a'); // New Typing Sound
+sfxTyping.loop = true; // Loop while typing
+
+function updateSysVolume(val) {
+    systemVolume = parseFloat(val);
+    sfxPowerOn.volume = systemVolume;
+    sfxPowerOff.volume = systemVolume;
+    sfxWinOpen.volume = systemVolume;
+    sfxWinClose.volume = systemVolume;
+    sfxTyping.volume = systemVolume;
+}
+
+// Set initial volumes
+updateSysVolume(systemVolume);
+
+// --- Typing Sound Hook ---
+// Listens globally for typing in any input or textarea
+let typingTimeout;
+document.addEventListener('input', (e) => {
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // Start or continue playing the looped sound
+        if (sfxTyping.paused) {
+            sfxTyping.play().catch(err => console.log("Audio play blocked."));
+        }
+        
+        // Reset the cutoff timer
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            sfxTyping.pause();
+            sfxTyping.currentTime = 0; // Reset so the next keystroke starts fresh
+        }, 200); // 200ms delay to cut off when typing stops
+    }
+});
 
 // --- Boot Sequence ---
 window.onload = function () {
@@ -111,7 +144,7 @@ function openImageViewer(imageSrc, windowId, title) {
     bringToFront(newWindow);
 }
 
-// --- Dragging Logic ---
+// --- Mobile & Desktop Dragging Logic ---
 function makeAllDraggable() {
     document.querySelectorAll(".window").forEach(win => makeDraggable(win));
 }
@@ -120,18 +153,36 @@ function makeDraggable(win) {
     const header = win.querySelector(".window-header");
     let isDragging = false, offsetX = 0, offsetY = 0;
 
-    win.addEventListener("mousedown", () => bringToFront(win));
-    header.addEventListener("mousedown", (e) => {
+    const startDrag = (e) => {
         isDragging = true;
-        offsetX = e.clientX - win.getBoundingClientRect().left;
-        offsetY = e.clientY - win.getBoundingClientRect().top;
-    });
-    document.addEventListener("mousemove", (e) => {
+        bringToFront(win);
+        // Handle both mouse and touch
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        offsetX = clientX - win.getBoundingClientRect().left;
+        offsetY = clientY - win.getBoundingClientRect().top;
+    };
+
+    const drag = (e) => {
         if (!isDragging) return;
-        win.style.left = (e.clientX - offsetX) + "px";
-        win.style.top = (e.clientY - offsetY) + "px";
-    });
-    document.addEventListener("mouseup", () => isDragging = false);
+        e.preventDefault(); // VERY IMPORTANT: Stops mobile screen from scrolling while dragging
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        win.style.left = (clientX - offsetX) + "px";
+        win.style.top = (clientY - offsetY) + "px";
+    };
+
+    const stopDrag = () => { isDragging = false; };
+
+    // Mouse Listeners
+    header.addEventListener("mousedown", startDrag);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("mouseup", stopDrag);
+
+    // Touch Listeners (Mobile)
+    header.addEventListener("touchstart", startDrag, { passive: false });
+    document.addEventListener("touchmove", drag, { passive: false });
+    document.addEventListener("touchend", stopDrag);
 }
 
 // --- Notes App Logic ---
@@ -243,10 +294,10 @@ function processCommand(cmdLine) {
             break;
         case 'fetch':
             printTerm(`
-   ___                   ._____        <span style="color:#fff">Pom-2 WebOS v1.2</span>
-  / _ /                 ./ / | |      <span style="color:#d16b8b">User:</span> root
- /_-_/ ___  /|. /||  ==   ../ /       <span style="color:#d16b8b">Kernel:</span> Pom-OS
-//    /__/ //.\/..||     .__/_/__      <span style="color:#d16b8b">Hardware:</span> el browser
+   ____                  <span style="color:#fff">Pom-2 WebOS v1.2</span>
+  / _ //                  <span style="color:#d16b8b">User:</span> root
+ /_-_// ___  //| /||      <span style="color:#d16b8b">Kernel:</span> Pom-OS
+//     /__/ // |/ ||     <span style="color:#d16b8b">Hardware:</span> el browser
             `);
             break;
         default:

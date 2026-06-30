@@ -302,9 +302,9 @@ body {
 }
 
 /* Notes App */
-.notes-layout {
+.window-content.notes-layout {
     flex-direction: row;
-    height: 300px;
+    height: 100%;
     padding: 0;
 }
 
@@ -564,4 +564,45 @@ body {
     margin-bottom: 5px;
     word-wrap: break-word;
     white-space: pre-wrap; /* Forces the browser to respect your ASCII spacing */
+}
+/* --- Input Zoom Fix & Global Resets --- */
+/* Forces mobile browsers to use a 16px base size, which naturally stops the auto-zoom */
+input, textarea { font-size: 16px !important; }
+
+/* --- Windows Update --- */
+.window {
+    position: absolute;
+    /* Use max-width instead of clamp to allow resizing */
+    width: 580px;
+    max-width: 90vw;
+    background: rgba(245, 245, 245, 0.95);
+    backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column;
+
+    /* Make the window resizable */
+    resize: both;
+    overflow: hidden; /* Required for resize to work */
+    min-height: 250px;
+    min-width: 300px;
+
+    animation: macPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Ensure the content stretches when you resize the window */
+.window-content { flex-grow: 1; height: 100%; display: flex; flex-direction: column; overflow-y: auto; }
+
+/* --- Settings App Layout --- */
+.settings-layout { padding: 20px; background: #fafafa; color: #333; }
+.settings-layout h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
+.settings-layout p { margin: 0; font-size: 0.9rem; color: #666; line-height: 1.4; }
+.settings-divider { height: 1px; background: #ccc; margin: 15px 0; }
+#sysVolumeSlider { width: 100%; cursor: pointer; accent-color: #6F4E37; }
+
+/* --- Taskbar Mobile Scrolling Fix --- */
+#taskbar {
+    /* ... keep your existing positioning ... */
+    max-width: 95vw; /* Don't let it touch screen edges on phones */
+    overflow-x: auto; /* Allow horizontal scrolling if apps overflow */
+    -webkit-overflow-scrolling: touch;
 }
