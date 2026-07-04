@@ -2,30 +2,30 @@
 
 Welcome to **Pom-2 OS**, a cozy, web-based operating system inspired by the UI/UX of the Pom-2 computers from Warframe. 
 
-This project aims to simulate a complete desktop environment directly in your browser, complete with movable windows, taskbar, interactive apps, and immersive sound effects.
+This project is a personal one i made for stardance its like got sounds, music windows everything, all of this was made with the help of ai and all polished off and detailed by yours truly
+so i hope whoever is reading this likes my project, ive really tried my best on this and i hoep you all love it <3
 
-## 🌟 Features Included
+## Features Included
 
-- **Immersive Welcome Screen**: A beautiful login interface with cookie consent handling.
+- a welcome screen and cookies dialog, please please please dont block cookies :sob:
 
-- **Draggable & Resizable Windows**: Interact with apps just like you would on a real OS.
+- **Draggable & Resizable Windows**: you can like move em, jiggle em, resize em, anything you want
 
-- **Terminal System**: A fully functional simulated command line (try typing `help`!).
+- **Terminal System**: a fully functional simulated command line (try the `help` command please for info).
 
-- **Notes App**: Write and save your thoughts. Includes a default welcome note by default.
+- **Notes App**: write and save your thoughts. i have a little note from me welcoming you there too (insert bluemoji "Love from the heart")
 
-- **Drawing App (Upgraded!)**: A simple, intuitive canvas app to sketch, choose colors/brush sizes, use the **eraser**, name your drawings, and save your masterpieces. Fully integrated with realistic pencil drawing sound effects!
-- **Gallery / File Explorer**: Browse a library of beautiful Warframe-themed images (Somatic Pods, Jade Shadows, Koumei, Oraxia, Radiation). Features a handy **Search Bar** to quickly find what you're looking for.
-- **Music Tunes Player**: Enjoy an expanded library of Warframe tracks including *For Narmer*, *Sleeping in the Cold Below*, *The Call*, and *We All Lift Together*. Features a sleek mini-player with a visualizer, pause/play, seeking, and a **Search Bar**.
-- **Pom-Pong Game**: Play the classic arcade game against a bot! Supports WASD, Arrow keys, and touch/mouse dragging. Track your high score, and if you reach 10 points, enjoy a special confetti victory sound!
-- **Calculator App**: A clean, simple interface for your quick math needs.
-- **Settings**: Adjust system SFX volumes on the fly.
-- **Fullscreen Mode**: A dedicated taskbar button to instantly snap the OS into fullscreen for maximum immersion.
-- **Immersive Sound System**: Dynamic sounds for booting up, shutting down, window handling, typing, terminal messages, game interactions, and drawing!
+- **Drawing App (UPDATES TOO)**: a simple, canvas app to sketch, choose color/brush sizes, use the eraser to erase, name your drawings, and save your wonderful art peices. (it has sound effects)
+- 
+- **Gallery / File Explorer**: browse a bunch of cool images (Somatic Pods, Jade Shadows, Koumei, Oraxia, Radiation symbol i added there). features a handy search bar to quickly find what you're looking for.
+- **Music Tunes Player**: MUSSIICCC, i added a bunch of new tracks *For Narmer*, *Sleeping in the Cold Below*, *The Call*, and *We All Lift Together*. i haveth a sleek mini-player with a visualizer, pause/play, seeking, and a Search Bar.
+- **Pom-Pong Game**: play agaisnt a bot in PONG (yk like the arcade game) Supports WASD, Arrow keys, and touch/mouse dragging. Track your high score, and if you reach 10 points then you win and get a uh confetti
+- **Settings**: adjust system SFX volumes on the fly.
+- **Fullscreen Mode**: a dedicated button for putting the app in fullscreen as per a suggestion i got, love to you random user
+- **sounds sounds sounds**: i personally added little sounds for booting up, shutting down, window handling, typing, terminal messages, game interactions, drawing and such, i hope you guys like it.
 
-## 🚀 Planned Features
+## Planned Features
 
-- Somachord game app
-- Further refinement to UI animations
+- Somachord game app maybe perchance
 
 Made with love by Oxy <3.
