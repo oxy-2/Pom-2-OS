@@ -12,6 +12,9 @@ const sfxTyping = new Audio('static/typing.m4a'); // New Typing Sound
 sfxTyping.loop = true; // Loop while typing
 const sfxMessage = new Audio('static/Pom-2-Message-received.mp3'); // Terminal sound
 const sfxPong = new Audio('static/pong.wav'); // Pong hit sound
+const sfxPongWin = new Audio('static/confettipongwon.mp3'); // Pong win sound
+const sfxPencil = new Audio('static/pencildrawing.mp3'); // Drawing sound
+sfxPencil.loop = true;
 
 function updateSysVolume(val) {
     systemVolume = parseFloat(val);
@@ -22,6 +25,8 @@ function updateSysVolume(val) {
     sfxTyping.volume = systemVolume;
     sfxMessage.volume = systemVolume;
     sfxPong.volume = systemVolume;
+    sfxPongWin.volume = systemVolume;
+    sfxPencil.volume = systemVolume;
 }
 
 // Set initial volumes
@@ -190,7 +195,15 @@ function makeDraggable(win) {
 }
 
 // --- Notes App Logic ---
-let notes = JSON.parse(localStorage.getItem('pom2_notes')) || [];
+let notes = JSON.parse(localStorage.getItem('pom2_notes'));
+if (!notes) {
+    notes = [{
+        id: Date.now().toString(),
+        title: "Hi Welcome to my WebOS",
+        body: "hi everyone this is the shipping version of my app, i hope you all like it.\nthere are a bunch of apps and games and i hope you like it :)\n\nwith love, oxy <3.\n\n    _____\n  // _  //    \\\\//    \\\\//\n//___//      //\\\\     //\n"
+    }];
+    localStorage.setItem('pom2_notes', JSON.stringify(notes));
+}
 
 function saveNote() {
     const title = document.getElementById('noteTitle').value || 'Untitled Note';
@@ -316,7 +329,11 @@ function processCommand(cmdLine) {
 // --- Music App Logic ---
 const musicData = {
     'partyofyourlifetime': { src: 'static/partyofyourlifetime.mp3', artist: 'on-lyne', title: 'Party of Your Lifetime' },
-    'thegreatdespair': { src: 'static/thegreatdespair.mp3', artist: 'on-lyne', title: 'The Great Despair' }
+    'thegreatdespair': { src: 'static/thegreatdespair.mp3', artist: 'on-lyne', title: 'The Great Despair' },
+    'fornarmer': { src: 'static/fornarmer.mp3', artist: 'Ballas', title: 'For Narmer' },
+    'sleepinginthecoldbelow': { src: 'static/sleepinginthecoldbelow.mp3', artist: 'The Sisters of Parvos', title: 'Sleeping in the Cold Below' },
+    'thecall': { src: 'static/thecall.mp3', artist: 'The Hex', title: 'The Call' },
+    'wealllifttogether': { src: 'static/wealllifttogether.mp3', artist: 'Solaris United', title: 'We All Lift Together' }
 };
 
 // --- Window App Management ---
@@ -386,10 +403,19 @@ const pongCtx = pongCanvas.getContext('2d');
 
 let pongLoop;
 let pongScore = 0;
+let pongHighScore = localStorage.getItem('pom2_pong_highscore') || 0;
+document.getElementById('pongHighScore').innerText = pongHighScore;
 
-const pongPlayer = { y: 150, width: 10, height: 60, speed: 0 };
+const pongPlayer = { y: 150, width: 10, height: 60, speed: 6 };
 const pongBot = { y: 150, width: 10, height: 60, maxSpeed: 4 };
 const ball = { x: 250, y: 175, radius: 6, vx: 5, vy: 5, speed: 5 };
+
+let pongState = 'MENU'; // MENU, PLAYING, WIN
+
+// Keyboard controls
+const keys = { w: false, s: false, ArrowUp: false, ArrowDown: false };
+document.addEventListener('keydown', e => { if (keys.hasOwnProperty(e.key)) keys[e.key] = true; });
+document.addEventListener('keyup', e => { if (keys.hasOwnProperty(e.key)) keys[e.key] = false; });
 
 // Drag handling for player
 let isPongDragging = false;
@@ -401,18 +427,17 @@ pongCanvas.addEventListener('touchstart', (e) => { isPongDragging = true; update
 document.addEventListener('touchmove', (e) => {
     if (isPongDragging) {
         const openWin = document.getElementById('pongApp');
-        if (!openWin.classList.contains('hidden')) e.preventDefault(); // Stop mobile screen scrolling
+        if (!openWin.classList.contains('hidden')) e.preventDefault();
         updatePlayerPos(e.touches[0]);
     }
 }, {passive: false});
 document.addEventListener('touchend', () => isPongDragging = false);
 
 function updatePlayerPos(e) {
+    if (pongState !== 'PLAYING') return;
     const rect = pongCanvas.getBoundingClientRect();
     let y = e.clientY - rect.top;
-    // Center paddle on cursor/finger
     pongPlayer.y = y - pongPlayer.height / 2;
-    // Screen bounds
     if (pongPlayer.y < 0) pongPlayer.y = 0;
     if (pongPlayer.y > pongCanvas.height - pongPlayer.height) pongPlayer.y = pongCanvas.height - pongPlayer.height;
 }
@@ -424,14 +449,41 @@ function resetBall() {
     ball.vy = (Math.random() * 2 - 1) * ball.speed;
 }
 
+function startPong() {
+    pongScore = 0;
+    document.getElementById('pongMenu').classList.add('hidden');
+    document.getElementById('pongWin').classList.add('hidden');
+    pongState = 'PLAYING';
+    resetBall();
+}
+
+function resumePong() {
+    document.getElementById('pongWin').classList.add('hidden');
+    pongState = 'PLAYING';
+    resetBall();
+}
+
+function winPong() {
+    pongState = 'WIN';
+    document.getElementById('pongWin').classList.remove('hidden');
+    sfxPongWin.currentTime = 0;
+    sfxPongWin.play().catch(e => null);
+}
+
 function updatePong() {
+    if (pongState !== 'PLAYING') return;
+
+    // Keyboard movement
+    if (keys.w || keys.ArrowUp) pongPlayer.y -= pongPlayer.speed;
+    if (keys.s || keys.ArrowDown) pongPlayer.y += pongPlayer.speed;
+    if (pongPlayer.y < 0) pongPlayer.y = 0;
+    if (pongPlayer.y > pongCanvas.height - pongPlayer.height) pongPlayer.y = pongCanvas.height - pongPlayer.height;
+
     // Move Bot (fair tracking logic)
     const botCenter = pongBot.y + pongBot.height / 2;
-    if (botCenter < ball.y - 10) {
-        pongBot.y += pongBot.maxSpeed;
-    } else if (botCenter > ball.y + 10) {
-        pongBot.y -= pongBot.maxSpeed;
-    }
+    if (botCenter < ball.y - 10) pongBot.y += pongBot.maxSpeed;
+    else if (botCenter > ball.y + 10) pongBot.y -= pongBot.maxSpeed;
+    
     if (pongBot.y < 0) pongBot.y = 0;
     if (pongBot.y > pongCanvas.height - pongBot.height) pongBot.y = pongCanvas.height - pongBot.height;
 
@@ -444,39 +496,46 @@ function updatePong() {
         ball.vy = -ball.vy;
     }
 
-    // Player Paddle Collision (Left side)
+    // Player Paddle Collision
     if (ball.vx < 0 && ball.x - ball.radius <= 20 + pongPlayer.width && ball.y >= pongPlayer.y && ball.y <= pongPlayer.y + pongPlayer.height) {
         ball.vx = -ball.vx;
-        ball.vx += 0.5; // Slight speed up on rally
-        pongScore++; // Increase volley score
+        ball.vx += 0.5;
+        pongScore++;
+        if (pongScore > pongHighScore) {
+            pongHighScore = pongScore;
+            localStorage.setItem('pom2_pong_highscore', pongHighScore);
+            document.getElementById('pongHighScore').innerText = pongHighScore;
+        }
         sfxPong.currentTime = 0;
         sfxPong.play().catch(e=>null);
+        
+        if (pongScore === 10) winPong();
     }
     
-    // Bot Paddle Collision (Right side)
+    // Bot Paddle Collision
     const botX = pongCanvas.width - 30;
     if (ball.vx > 0 && ball.x + ball.radius >= botX && ball.y >= pongBot.y && ball.y <= pongBot.y + pongBot.height) {
         ball.vx = -ball.vx;
-        ball.vx -= 0.5; // Slight speed up on rally
+        ball.vx -= 0.5;
         sfxPong.currentTime = 0;
         sfxPong.play().catch(e=>null);
     }
 
-    // Out of bounds / Scoring resets
+    // Out of bounds
     if (ball.x < 0) {
-        pongScore = 0; // Player missed, reset score
+        pongScore = 0;
         resetBall();
     } else if (ball.x > pongCanvas.width) {
-        resetBall(); // Bot missed (unlikely, but just in case)
+        resetBall();
     }
 }
 
 function drawPong() {
-    // Clear canvas
     pongCtx.fillStyle = '#111';
     pongCtx.fillRect(0, 0, pongCanvas.width, pongCanvas.height);
     
-    // Center dashed line
+    if (pongState !== 'PLAYING') return;
+
     pongCtx.setLineDash([10, 15]);
     pongCtx.beginPath();
     pongCtx.moveTo(pongCanvas.width / 2, 0);
@@ -484,17 +543,14 @@ function drawPong() {
     pongCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     pongCtx.stroke();
 
-    // Score display
     pongCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
     pongCtx.font = '40px monospace';
     pongCtx.fillText(pongScore, pongCanvas.width / 2 - 40, 50);
 
-    // Draw paddles
     pongCtx.fillStyle = '#fff';
     pongCtx.fillRect(20, pongPlayer.y, pongPlayer.width, pongPlayer.height);
     pongCtx.fillRect(pongCanvas.width - 30, pongBot.y, pongBot.width, pongBot.height);
 
-    // Draw ball
     pongCtx.beginPath();
     pongCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
     pongCtx.fill();
@@ -510,5 +566,197 @@ function loopPong() {
 }
 
 // Start loop when pong is loaded
-resetBall();
 loopPong();
+
+// --- Fullscreen Feature ---
+function fullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.log("Error attempting to enable full-screen mode: " + err.message);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// --- File/Music Filter Logic ---
+function filterGrid(inputElem) {
+    const filter = inputElem.value.toLowerCase();
+    const grid = inputElem.closest('.window-content').querySelector('.file-grid');
+    if (!grid) return;
+    const items = grid.getElementsByClassName('file-item');
+    for (let i = 0; i < items.length; i++) {
+        const text = items[i].innerText.toLowerCase();
+        if (text.includes(filter)) {
+            items[i].style.display = "";
+        } else {
+            items[i].style.display = "none";
+        }
+    }
+}
+
+// --- Calculator Logic ---
+let calcCurrent = "";
+const calcDisplay = document.getElementById('calcDisplay');
+
+function calcInput(val) {
+    calcCurrent += val;
+    calcDisplay.value = calcCurrent;
+}
+
+function calcClear() {
+    calcCurrent = "";
+    calcDisplay.value = "";
+}
+
+function calcEval() {
+    try {
+        const result = new Function('return ' + calcCurrent)();
+        if (!isFinite(result) || isNaN(result)) throw new Error("Invalid");
+        calcCurrent = result.toString();
+        calcDisplay.value = calcCurrent;
+    } catch (e) {
+        calcDisplay.value = "Error";
+        calcCurrent = "";
+    }
+}
+
+// --- Drawing App Logic ---
+const drawCanvas = document.getElementById('drawCanvas');
+const drawCtx = drawCanvas.getContext('2d');
+let drawing = false;
+let drawings = JSON.parse(localStorage.getItem('pom2_drawings')) || [];
+let isEraser = false;
+
+if (drawCtx) {
+    drawCtx.fillStyle = "#ffffff";
+    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+}
+
+function toggleEraser() {
+    isEraser = !isEraser;
+    const btn = document.getElementById('eraserBtn');
+    if (isEraser) {
+        btn.classList.add('active');
+        btn.innerText = "🧹 Eraser: ON";
+    } else {
+        btn.classList.remove('active');
+        btn.innerText = "🧹 Eraser: OFF";
+    }
+    sfxMessage.currentTime = 0; sfxMessage.play().catch(e=>null);
+}
+
+function disableEraser() {
+    isEraser = false;
+    const btn = document.getElementById('eraserBtn');
+    if (btn) {
+        btn.classList.remove('active');
+        btn.innerText = "🧹 Eraser: OFF";
+    }
+}
+
+function clearCanvas() {
+    if (!drawCtx) return;
+    drawCtx.fillStyle = "#ffffff";
+    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+    sfxWinOpen.currentTime = 0; sfxWinOpen.play().catch(e=>null);
+}
+
+function startPosition(e) {
+    drawing = true;
+    sfxPencil.play().catch(e=>null);
+    draw(e);
+}
+function endPosition() {
+    drawing = false;
+    sfxPencil.pause();
+    sfxPencil.currentTime = 0;
+    if (drawCtx) drawCtx.beginPath();
+}
+function draw(e) {
+    if (!drawing || !drawCtx) return;
+    
+    let clientX, clientY;
+    if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+        const openWin = document.getElementById('drawingApp');
+        if (!openWin.classList.contains('hidden')) e.preventDefault();
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+
+    const rect = drawCanvas.getBoundingClientRect();
+    const scaleX = drawCanvas.width / rect.width;
+    const scaleY = drawCanvas.height / rect.height;
+    
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+
+    drawCtx.lineWidth = document.getElementById('drawSize').value;
+    drawCtx.lineCap = "round";
+    if (isEraser) {
+        drawCtx.strokeStyle = "#ffffff";
+    } else {
+        drawCtx.strokeStyle = document.getElementById('drawColor').value;
+    }
+
+    drawCtx.lineTo(x, y);
+    drawCtx.stroke();
+    drawCtx.beginPath();
+    drawCtx.moveTo(x, y);
+}
+
+if (drawCanvas) {
+    drawCanvas.addEventListener('mousedown', startPosition);
+    drawCanvas.addEventListener('mouseup', endPosition);
+    drawCanvas.addEventListener('mousemove', draw);
+    drawCanvas.addEventListener('mouseleave', endPosition);
+
+    drawCanvas.addEventListener('touchstart', startPosition, {passive: false});
+    drawCanvas.addEventListener('touchend', endPosition);
+    drawCanvas.addEventListener('touchmove', draw, {passive: false});
+}
+
+function newDrawing() {
+    if (!drawCtx) return;
+    drawCtx.fillStyle = "#ffffff";
+    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+    document.getElementById('drawTitle').value = "Untitled";
+    sfxWinOpen.currentTime = 0; sfxWinOpen.play().catch(e=>null);
+}
+
+function saveDrawing() {
+    if (!drawCanvas) return;
+    const dataURL = drawCanvas.toDataURL('image/png');
+    const id = Date.now().toString();
+    const title = document.getElementById('drawTitle').value || "Untitled";
+    drawings.push({ id, title, data: dataURL });
+    localStorage.setItem('pom2_drawings', JSON.stringify(drawings));
+    sfxMessage.currentTime = 0; sfxMessage.play().catch(e=>null);
+    renderDrawings();
+}
+
+function renderDrawings() {
+    const list = document.getElementById('drawList');
+    if (!list) return;
+    list.innerHTML = '';
+    drawings.forEach((d, index) => {
+        const div = document.createElement('div');
+        div.className = 'draw-item';
+        div.innerText = d.title ? d.title : `Drawing ${index + 1}`;
+        div.onclick = () => {
+            document.getElementById('drawTitle').value = d.title || `Drawing ${index + 1}`;
+            const img = new Image();
+            img.onload = () => {
+                if (!drawCtx) return;
+                drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                drawCtx.drawImage(img, 0, 0);
+            };
+            img.src = d.data;
+        };
+        list.appendChild(div);
+    });
+}
+renderDrawings();

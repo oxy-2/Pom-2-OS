@@ -86,12 +86,22 @@
                     <span>📁 Gallery</span>
                     <button class="close-btn" onclick="closeApp('explorer')">✖</button>
                 </div>
-                <div class="window-content file-grid">
-                    <div class="file-item" onclick="openImageViewer('static/pomeye.webp', 'img-pomeye', 'pomeye.webp')">
-                        🖼️ pomeye.webp</div>
-                    <div class="file-item"
-                        onclick="openImageViewer('static/pomoswallpaper.jpg', 'img-wall', 'pomoswallpaper.jpg')">🖼️
-                        pomoswallpaper.jpg</div>
+                <div class="window-content">
+                    <div class="app-search-container">
+                        <input type="text" placeholder="Search gallery..." oninput="filterGrid(this)">
+                    </div>
+                    <div class="file-grid">
+                        <div class="file-item" onclick="openImageViewer('static/pomeye.webp', 'img-pomeye', 'pomeye.webp')">
+                            🖼️ pomeye.webp</div>
+                        <div class="file-item"
+                            onclick="openImageViewer('static/pomoswallpaper.jpg', 'img-wall', 'pomoswallpaper.jpg')">🖼️
+                            pomoswallpaper.jpg</div>
+                        <div class="file-item" onclick="openImageViewer('static/SomaticPodsReservoir.png', 'img-somatic', 'SomaticPodsReservoir.png')">🖼️ SomaticPodsReservoir.png</div>
+                        <div class="file-item" onclick="openImageViewer('static/jadeshadows.webp', 'img-jade', 'jadeshadows.webp')">🖼️ jadeshadows.webp</div>
+                        <div class="file-item" onclick="openImageViewer('static/koumei.webp', 'img-koumei', 'koumei.webp')">🖼️ koumei.webp</div>
+                        <div class="file-item" onclick="openImageViewer('static/oraxia.webp', 'img-oraxia', 'oraxia.webp')">🖼️ oraxia.webp</div>
+                        <div class="file-item" onclick="openImageViewer('static/radiatioin.png', 'img-radiation', 'radiatioin.png')">🖼️ radiatioin.png</div>
+                    </div>
                 </div>
             </div>
 
@@ -100,10 +110,19 @@
                     <span>🎵 Tunes</span>
                     <button class="close-btn" onclick="closeApp('music')">✖</button>
                 </div>
-                <div class="window-content file-grid">
-                    <div class="file-item" onclick="playMusic('partyofyourlifetime')">🎵 Party of Your Lifetime -
-                        on-lyne</div>
-                    <div class="file-item" onclick="playMusic('thegreatdespair')">🎵 The Great Despair - on-lyne</div>
+                <div class="window-content">
+                    <div class="app-search-container">
+                        <input type="text" placeholder="Search tunes..." oninput="filterGrid(this)">
+                    </div>
+                    <div class="file-grid">
+                        <div class="file-item" onclick="playMusic('partyofyourlifetime')">🎵 Party of Your Lifetime -
+                            on-lyne</div>
+                        <div class="file-item" onclick="playMusic('thegreatdespair')">🎵 The Great Despair - on-lyne</div>
+                        <div class="file-item" onclick="playMusic('fornarmer')">🎵 For Narmer - Ballas</div>
+                        <div class="file-item" onclick="playMusic('sleepinginthecoldbelow')">🎵 Sleeping in the Cold Below - The Sisters of Parvos</div>
+                        <div class="file-item" onclick="playMusic('thecall')">🎵 The Call - The Hex</div>
+                        <div class="file-item" onclick="playMusic('wealllifttogether')">🎵 We All Lift Together - Solaris United</div>
+                    </div>
                 </div>
             </div>
 
@@ -113,6 +132,17 @@
                     <button class="close-btn" onclick="closeApp('pongApp')">✖</button>
                 </div>
                 <div class="window-content pong-content">
+                    <div id="pongMenu" class="pong-overlay">
+                        <h2 class="cursive">Pom-Pong</h2>
+                        <p>High Score: <span id="pongHighScore">0</span></p>
+                        <button onclick="startPong()" class="pong-btn">New Game</button>
+                    </div>
+                    <div id="pongWin" class="pong-overlay hidden">
+                        <h2 class="cursive">You Won!</h2>
+                        <p>Congratulations, you reached 10 points!</p>
+                        <button onclick="resumePong()" class="pong-btn">Continue</button>
+                        <button onclick="startPong()" class="pong-btn">Restart</button>
+                    </div>
                     <canvas id="pongCanvas" width="500" height="350"></canvas>
                 </div>
             </div>
@@ -128,6 +158,60 @@
                     </div>
                 </div>
             </template>
+
+            <div class="window hidden calc-window" id="calculator">
+                <div class="window-header">
+                    <span>🖩 Calculator</span>
+                    <button class="close-btn" onclick="closeApp('calculator')">✖</button>
+                </div>
+                <div class="window-content calc-content">
+                    <input type="text" id="calcDisplay" readonly>
+                    <div class="calc-grid">
+                        <button onclick="calcInput('7')">7</button>
+                        <button onclick="calcInput('8')">8</button>
+                        <button onclick="calcInput('9')">9</button>
+                        <button onclick="calcInput('/')" class="calc-op">÷</button>
+                        <button onclick="calcInput('4')">4</button>
+                        <button onclick="calcInput('5')">5</button>
+                        <button onclick="calcInput('6')">6</button>
+                        <button onclick="calcInput('*')" class="calc-op">×</button>
+                        <button onclick="calcInput('1')">1</button>
+                        <button onclick="calcInput('2')">2</button>
+                        <button onclick="calcInput('3')">3</button>
+                        <button onclick="calcInput('-')" class="calc-op">−</button>
+                        <button onclick="calcClear()" class="calc-clear">C</button>
+                        <button onclick="calcInput('0')">0</button>
+                        <button onclick="calcEval()" class="calc-eval">=</button>
+                        <button onclick="calcInput('+')" class="calc-op">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="window hidden" id="drawingApp">
+                <div class="window-header">
+                    <span>🎨 Draw</span>
+                    <button class="close-btn" onclick="closeApp('drawingApp')">✖</button>
+                </div>
+                <div class="window-content draw-layout">
+                    <div class="draw-sidebar">
+                        <input type="text" id="drawTitle" placeholder="Drawing Title" class="draw-title-input" value="Untitled">
+                        <button class="draw-btn" onclick="newDrawing()">📄 New</button>
+                        <button class="draw-btn" onclick="saveDrawing()">💾 Save</button>
+                        <button class="draw-btn" onclick="clearCanvas()">🗑️ Clear</button>
+                        <div class="draw-tools">
+                            <label>Color</label>
+                            <input type="color" id="drawColor" value="#000000" onchange="disableEraser()">
+                            <label>Size</label>
+                            <input type="range" id="drawSize" min="1" max="20" value="5">
+                            <button class="draw-tool-btn" id="eraserBtn" onclick="toggleEraser()">🧹 Eraser: OFF</button>
+                        </div>
+                        <div id="drawList"></div>
+                    </div>
+                    <div class="draw-canvas-container">
+                        <canvas id="drawCanvas" width="800" height="600"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="taskbar">
@@ -138,8 +222,10 @@
                 <button class="app-icon" onclick="openApp('explorer')">📁</button>
                 <button class="app-icon" onclick="openApp('music')">🎵</button>
                 <button class="app-icon" onclick="openApp('pongApp')">🏓</button>
+                <button class="app-icon" onclick="openApp('drawingApp')">🎨</button>
                 <button class="app-icon" onclick="openApp('settings')">⚙️</button>
                 <div class="divider"></div>
+                <button class="app-icon fullscreen-btn" onclick="fullscreen()">⛶</button>
                 <button class="app-icon quit-btn" onclick="quitOS()">🔴</button>
             </div>
         </div>
