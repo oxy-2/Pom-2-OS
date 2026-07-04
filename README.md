@@ -14,4 +14,16 @@ Here's what I have added so far:
 * a game app where you can play pong :O
 * I also added a cookie consent popup since I'm assuming people don't want their data tracked
 
-I'm planning to add more stuff but for now this is what I have.
+I'm planning to add more stuff 
+I will add:
+
+- better readme
+- full window and un full window button for os
+- pong with wasd
+- more songs (all the warframe songs)
+- somachord game app
+- add highscore and more features to pong
+- add more images
+- add search to song and images apps
+- maybe a calculator app
+- lastly a drawing app
