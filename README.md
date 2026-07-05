@@ -17,15 +17,27 @@ so i hope whoever is reading this likes my project, ive really tried my best on 
 
 - **Drawing App (UPDATES TOO)**: a simple, canvas app to sketch, choose color/brush sizes, use the eraser to erase, name your drawings, and save your wonderful art peices. (it has sound effects)
 - 
-- **Gallery / File Explorer**: browse a bunch of cool images (Somatic Pods, Jade Shadows, Koumei, Oraxia, Radiation symbol i added there). features a handy search bar to quickly find what you're looking for.
-- **Music Tunes Player**: MUSSIICCC, i added a bunch of new tracks *For Narmer*, *Sleeping in the Cold Below*, *The Call*, and *We All Lift Together*. i haveth a sleek mini-player with a visualizer, pause/play, seeking, and a Search Bar.
-- **Pom-Pong Game**: play agaisnt a bot in PONG (yk like the arcade game) Supports WASD, Arrow keys, and touch/mouse dragging. Track your high score, and if you reach 10 points then you win and get a uh confetti
-- **Settings**: adjust system SFX volumes on the fly.
-- **Fullscreen Mode**: a dedicated button for putting the app in fullscreen as per a suggestion i got, love to you random user
-- **sounds sounds sounds**: i personally added little sounds for booting up, shutting down, window handling, typing, terminal messages, game interactions, drawing and such, i hope you guys like it.
+- **Gallery / File Explorer**: browse a bunch of cool images (Somatic Pods, Jade Shadows, Koumei, Oraxia, Radiation symbol i added there). also theres like a search bar its also in the music player to help like find what your looking for also if i add more stuff then its goog
+
+- **Music Tunes Player**: MUSSIICCC, i added a bunch of new tracks *For Narmer*, *Sleeping in the Cold Below*, *The Call*, and *We All Lift Together*. i haveth a sleek mini-player with a visualizer, pause/play, seeking, and a the same kidna search thing from earlier with the gallery thing.
+
+- **Pom-Pong Game**: play agaisnt a bot in PONG (yk like the arcade game) Supports WASD, Arrow keys, and touch/mouse dragging. Track your high score, and if you reach 10 points then you win and get a uh confetti and a prompt to continue playing or to like restart, i might have some more stuff to work with on this by the way
+
+- **Settings**: just like funny lil hardware specs sheet thingy uh i dont even use nvidia and like i should have made it after a amd gpu but yeah uh anyways side tangent the settings app actual functionality is changing the system sound tho i think there might be a small bug rn i saw yesterday but couldnt get it to happen again, if your reviewing this and like basically turn down the sfx and then have all the window sound effects for open and close stop working please lmk how it happened and such, thank youu.
+
+- **Fullscreen Mode**: a dedicated button for putting the app in fullscreen as per a suggestion i got, love to the random user who reccomenede it on my ship
+
+- **sounds sounds sounds**: i personally added little sounds for booting up, shutting down, window handling, typing, terminal messages, game interactions, drawing and such, i hope you guys like it, i might add some more in the future like one for like clicking
 
 ## Planned Features
 
-- Somachord game app maybe perchance
+- maybe like a functional calendar as the game has with the seasons, that would be really cool i think and then oooo i can like mark events important to me like my bday, and my friends bdays and gf bday and more lol, yeah that would be cool, ill add that like tmrw i think.
+
+- Somachord game app maybe perchance, we shall see cuz like its not in the games pom os thing or isnt like related but its a cool idea and my friend suggested it.
+
+## THANK YOU
+BIG THANKS TO EVERYONE
+i recived so so many sweet comments on my first ship pretty much and you all gave good ideas and such and im so thankfull for that.
+sincerely i wish you all from stardance and everyone in general a very good day or night. <3
 
 Made with love by Oxy <3.
