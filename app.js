@@ -65,6 +65,7 @@ window.onload = function () {
 
     loadNotes();
     makeAllDraggable();
+    initCalendar();
 };
 
 // --- Welcome / Login Actions ---
@@ -760,3 +761,344 @@ function renderDrawings() {
     });
 }
 renderDrawings();
+
+// --- Hex Calendar App Logic ---
+let calCurrentDate = new Date();
+let selectedCalDateStr = null;
+let calendarEvents = [];
+
+const CATEGORY_MAP = {
+    birthday: { name: 'Birthday', icon: '🎂' },
+    event: { name: 'Event', icon: '🎫' },
+    marked: { name: 'Marked Date', icon: '📋' },
+    work: { name: 'Work', icon: '💻' },
+    special: { name: 'Special', icon: '⭐' }
+};
+
+// Cookie helpers for data persistence backup
+function setCookie(name, value, days = 365) {
+    const d = new Date();
+    d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + d.toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/;SameSite=Lax";
+}
+
+function getCookie(name) {
+    const cname = name + "=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(cname) === 0) return c.substring(cname.length, c.length);
+    }
+    return "";
+}
+
+function loadCalendarEvents() {
+    let saved = localStorage.getItem('pom2_calendar_events');
+    if (!saved) {
+        saved = getCookie('pom2_calendar_events');
+    }
+    if (saved) {
+        try {
+            calendarEvents = JSON.parse(saved);
+        } catch (e) {
+            calendarEvents = [];
+        }
+    } else {
+        // Pre-populate default cozy events (Warframe style + Oxy's Birthday + Hackathon)
+        const today = new Date();
+        const year = today.getFullYear();
+        const monthStr = String(today.getMonth() + 1).padStart(2, '0');
+        const dayNum = today.getDate();
+        
+        const formatD = (d) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`;
+
+        calendarEvents = [
+            {
+                id: '1',
+                date: `${year}-01-10`,
+                category: 'birthday',
+                title: "My mom's Birthday 🎂",
+                desc: 'My moms bday, also one of my little brothers, the other little brother is april'
+            },
+            {
+                id: '2',
+                date: `${year}-07-15`,
+                category: 'birthday',
+                title: "Jane's Birthday 🎂",
+                desc: 'The Birthday of my lovely lovely gf <3'
+            },
+            {
+                id: '3',
+                date: `${year}-08-20`,
+                category: 'birthday',
+                title: "Oxy's Birthday 🎂",
+                desc: 'my very own birthday'
+            },
+            {
+                id: '4',
+                date: `${year}-08-20`,
+                category: 'birthday',
+                title: "Bagel's Birthday 🎂",
+                desc: 'My twins birthday!'
+            },
+            {
+                id: '5',
+                date: `${year}-08-17`,
+                category: 'birthday',
+                title: "Isaiah's Birthday 🎂",
+                desc: 'Its my friend isaiahs bday, he chill'
+            },
+            {
+                id: '6',
+                date: `${year}-09-17`,
+                category: 'birthday',
+                title: "My dad's Birthday 🎂",
+                desc: 'My fathers bday'
+            }
+        ];
+        saveCalendarEvents();
+    }
+}
+
+function saveCalendarEvents() {
+    const dataStr = JSON.stringify(calendarEvents);
+    localStorage.setItem('pom2_calendar_events', dataStr);
+    setCookie('pom2_calendar_events', dataStr, 365);
+}
+
+function initCalendar() {
+    loadCalendarEvents();
+    renderCalendar();
+}
+
+function getSeason(monthIndex) {
+    if (monthIndex === 11 || monthIndex === 0 || monthIndex === 1) return { name: 'WINTER', css: 'season-winter', pattern: '🐧 ❄️ 🐧 ❄️ 🐧 ❄️ 🐧' };
+    if (monthIndex >= 2 && monthIndex <= 4) return { name: 'SPRING', css: 'season-spring', pattern: '🌸 🌿 🌳 🌸 🌿 🌳 🌸' };
+    if (monthIndex >= 5 && monthIndex <= 7) return { name: 'SUMMER', css: 'season-summer', pattern: '☀️ 🍦 🍹 ☀️ 🍦 🍹 ☀️' };
+    return { name: 'AUTUMN', css: 'season-autumn', pattern: '🍁 🍄 🍂 🍁 🍄 🍂 🍁' };
+}
+
+function renderCalendar() {
+    const calendarWin = document.getElementById('calendarApp');
+    if (!calendarWin) return;
+
+    const year = calCurrentDate.getFullYear();
+    const month = calCurrentDate.getMonth();
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const season = getSeason(month);
+
+    calendarWin.classList.remove('season-winter', 'season-spring', 'season-summer', 'season-autumn');
+    calendarWin.classList.add(season.css);
+
+    document.getElementById('calYearDisplay').innerText = year;
+    document.getElementById('calSeasonDisplay').innerText = season.name;
+    document.getElementById('calMonthDisplay').innerText = monthNames[month];
+    document.getElementById('calBannerPattern').innerText = season.pattern;
+
+    const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+    const currentDay = (calCurrentDate.getMonth() === new Date().getMonth() && calCurrentDate.getFullYear() === new Date().getFullYear()) ? new Date().getDate() : 1;
+    const daysLeft = Math.max(1, daysInCurrentMonth - currentDay);
+    document.getElementById('calSeasonCountdown').innerText = `${daysLeft}d ${Math.floor(Math.random() * 12 + 1)}h`;
+
+    renderCalendarGrid(year, month);
+    renderOverridesPanel();
+}
+
+function changeCalMonth(delta) {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() + delta);
+    renderCalendar();
+    sfxWinOpen.currentTime = 0;
+    sfxWinOpen.play().catch(e => null);
+}
+
+function renderCalendarGrid(year, month) {
+    const grid = document.getElementById('calGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevDaysInMonth = new Date(year, month, 0).getDate();
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    const totalCells = (firstDayIndex + daysInMonth > 35) ? 42 : 35;
+
+    for (let i = 0; i < totalCells; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+
+        let cellYear = year;
+        let cellMonth = month;
+        let dayNum = 0;
+        let isOtherMonth = false;
+
+        if (i < firstDayIndex) {
+            isOtherMonth = true;
+            dayNum = prevDaysInMonth - firstDayIndex + i + 1;
+            cellMonth = month - 1;
+            if (cellMonth < 0) { cellMonth = 11; cellYear--; }
+        } else if (i >= firstDayIndex + daysInMonth) {
+            isOtherMonth = true;
+            dayNum = i - (firstDayIndex + daysInMonth) + 1;
+            cellMonth = month + 1;
+            if (cellMonth > 11) { cellMonth = 0; cellYear++; }
+        } else {
+            dayNum = i - firstDayIndex + 1;
+        }
+
+        const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+
+        if (isOtherMonth) cell.classList.add('other-month');
+        if (dateStr === todayStr) cell.classList.add('today');
+        if (selectedCalDateStr === dateStr) cell.classList.add('selected');
+
+        const dayEvents = calendarEvents.filter(e => e.date === dateStr);
+        let iconsHtml = '';
+        if (dayEvents.length > 0) {
+            const icons = dayEvents.map(e => CATEGORY_MAP[e.category]?.icon || '📌');
+            iconsHtml = `<div class="cal-day-icons">${icons.join('')}</div>`;
+        }
+
+        cell.innerHTML = `
+            ${iconsHtml}
+            <div class="cal-day-num">${dayNum}</div>
+        `;
+
+        cell.onclick = () => {
+            if (selectedCalDateStr === dateStr) {
+                selectedCalDateStr = null;
+            } else {
+                selectedCalDateStr = dateStr;
+            }
+            sfxMessage.currentTime = 0;
+            sfxMessage.play().catch(e => null);
+            renderCalendarGrid(year, month);
+            renderOverridesPanel();
+        };
+
+        grid.appendChild(cell);
+    }
+}
+
+function renderOverridesPanel() {
+    const container = document.getElementById('overridesBody');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let displayEvents = [];
+    let dateLabelText = '';
+
+    if (selectedCalDateStr) {
+        displayEvents = calendarEvents.filter(e => e.date === selectedCalDateStr);
+        const [y, m, d] = selectedCalDateStr.split('-');
+        const dObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        dateLabelText = `Selected Date: ${monthNames[dObj.getMonth()]} ${dObj.getDate()}, ${y}`;
+    } else {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const sortedFuture = calendarEvents
+            .filter(e => e.date >= todayStr)
+            .sort((a, b) => a.date.localeCompare(b.date));
+
+        if (sortedFuture.length > 0) {
+            const closestDate = sortedFuture[0].date;
+            displayEvents = calendarEvents.filter(e => e.date === closestDate);
+            const [y, m, d] = closestDate.split('-');
+            const dObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            dateLabelText = `Next Event: ${monthNames[dObj.getMonth()]} ${dObj.getDate()}, ${y}`;
+        } else if (calendarEvents.length > 0) {
+            displayEvents = [calendarEvents[0]];
+            dateLabelText = `Event: ${calendarEvents[0].date}`;
+        } else {
+            dateLabelText = `No Upcoming Events`;
+        }
+    }
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'override-date-label';
+    labelDiv.innerText = dateLabelText;
+    container.appendChild(labelDiv);
+
+    if (displayEvents.length === 0) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.className = 'override-empty-msg';
+        emptyMsg.innerText = 'Nothing recorded for this date. Click "+ Add Thingies" to add something!';
+        container.appendChild(emptyMsg);
+        return;
+    }
+
+    displayEvents.forEach(evt => {
+        const catInfo = CATEGORY_MAP[evt.category] || { name: 'Event', icon: '📌' };
+        const card = document.createElement('div');
+        card.className = 'override-card';
+        card.innerHTML = `
+            <div class="override-card-header">
+                <span class="override-category-badge">${catInfo.icon} ${catInfo.name}</span>
+                <button class="override-del-btn" onclick="deleteCalendarEvent('${evt.id}')" title="Delete thing">✖</button>
+            </div>
+            <div class="override-card-title">${evt.title}</div>
+            ${evt.desc ? `<div class="override-card-desc">${evt.desc}</div>` : ''}
+        `;
+        container.appendChild(card);
+    });
+}
+
+function toggleAddEventForm() {
+    const modal = document.getElementById('addEventModal');
+    if (!modal) return;
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        const defaultDate = selectedCalDateStr || new Date().toISOString().split('T')[0];
+        document.getElementById('eventDateInput').value = defaultDate;
+        document.getElementById('eventTitleInput').value = '';
+        document.getElementById('eventDescInput').value = '';
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+function saveCalendarEventFromForm() {
+    const date = document.getElementById('eventDateInput').value;
+    const category = document.getElementById('eventCategoryInput').value;
+    const title = document.getElementById('eventTitleInput').value.trim();
+    const desc = document.getElementById('eventDescInput').value.trim();
+
+    if (!date || !title) {
+        alert('valid date and title por flavor (its funny cuz im from portugal yk)');
+        return;
+    }
+
+    const newEvent = {
+        id: Date.now().toString(),
+        date,
+        category,
+        title,
+        desc
+    };
+
+    calendarEvents.push(newEvent);
+    saveCalendarEvents();
+
+    selectedCalDateStr = date;
+    const [y, m] = date.split('-');
+    calCurrentDate = new Date(parseInt(y), parseInt(m) - 1, 1);
+
+    toggleAddEventForm();
+    renderCalendar();
+
+    sfxMessage.currentTime = 0;
+    sfxMessage.play().catch(e => null);
+}
+
+function deleteCalendarEvent(id) {
+    calendarEvents = calendarEvents.filter(e => e.id !== id);
+    saveCalendarEvents();
+    renderCalendar();
+    sfxWinClose.currentTime = 0;
+    sfxWinClose.play().catch(e => null);
+}

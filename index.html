@@ -212,6 +212,84 @@
                     </div>
                 </div>
             </div>
+
+            <div class="window hidden calendar-window season-winter" id="calendarApp">
+                <div class="window-header">
+                    <span>📅 Calendar</span>
+                    <button class="close-btn" onclick="closeApp('calendarApp')">✖</button>
+                </div>
+                <div class="window-content calendar-content">
+                    <div class="calendar-layout">
+                        <!-- Left Side: Main Calendar Grid -->
+                        <div class="calendar-main">
+                            <div class="cal-top-bar">
+                                <div class="cal-season-title">
+                                    <span id="calYearDisplay">2026</span> <span id="calSeasonDisplay">WINTER</span>
+                                </div>
+                                <div class="cal-controls">
+                                    <div class="cal-month-nav">
+                                        <button onclick="changeCalMonth(-1)"><</button>
+                                        <span id="calMonthDisplay">February</span>
+                                        <button onclick="changeCalMonth(1)">></button>
+                                    </div>
+                                    <div class="cal-next-season">
+                                        Next Season: <span id="calSeasonCountdown">8d 4h</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cal-banner-pattern" id="calBannerPattern"></div>
+                            <div class="cal-weekdays">
+                                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                            </div>
+                            <div class="cal-grid" id="calGrid"></div>
+                        </div>
+
+                        <!-- Right Side: Thingies Panel -->
+                        <div class="calendar-sidebar">
+                            <div class="overrides-header-btn">
+                                <span>Thingies (events)</span>
+                            </div>
+                            <div class="overrides-body" id="overridesBody"></div>
+                            <div class="overrides-footer">
+                                <button class="add-override-btn" onclick="toggleAddEventForm()">+ Add Thingies</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Event Form Modal Overlay -->
+                    <div id="addEventModal" class="cal-modal hidden">
+                        <div class="cal-modal-card">
+                            <h3>Add thingimajig</h3>
+                            <div class="cal-form-group">
+                                <label>Date</label>
+                                <input type="date" id="eventDateInput">
+                            </div>
+                            <div class="cal-form-group">
+                                <label>category</label>
+                                <select id="eventCategoryInput">
+                                    <option value="birthday">Birthday</option>
+                                    <option value="event">Event</option>
+                                    <option value="marked">Marked Date</option>
+                                    <option value="work">Work</option>
+                                    <option value="special">Special</option>
+                                </select>
+                            </div>
+                            <div class="cal-form-group">
+                                <label>title</label>
+                                <input type="text" id="eventTitleInput" placeholder="OooOOooOo im a placeholder...">
+                            </div>
+                            <div class="cal-form-group">
+                                <label>details</label>
+                                <textarea id="eventDescInput" placeholder="put decripion..."></textarea>
+                            </div>
+                            <div class="cal-modal-actions">
+                                <button onclick="saveCalendarEventFromForm()" class="cal-save-btn">Save Override</button>
+                                <button onclick="toggleAddEventForm()" class="cal-cancel-btn">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="taskbar">
@@ -221,6 +299,7 @@
                 <button class="app-icon" onclick="openApp('terminal')">💻</button>
                 <button class="app-icon" onclick="openApp('explorer')">📁</button>
                 <button class="app-icon" onclick="openApp('music')">🎵</button>
+                <button class="app-icon" onclick="openApp('calendarApp')">📅</button>
                 <button class="app-icon" onclick="openApp('pongApp')">🏓</button>
                 <button class="app-icon" onclick="openApp('drawingApp')">🎨</button>
                 <button class="app-icon" onclick="openApp('settings')">⚙️</button>
