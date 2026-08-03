@@ -31,13 +31,13 @@ so i hope whoever is reading this likes my project, ive really tried my best on 
 
 - **kinda functional calendar**: ITS A CALENDAR, didnt actually take me as long as i thought it would to add, its like the game has with the seasons and colors and stuff, you can like mark events and more lol. (also some bdays of mine and people close to me are there)
 
-- ****
+- **The Mandachord** i think thats how its spelt, its the latest thing i did, a lil bit of jank some features are broken but you can like make music pretty much and also like you can change speed, and its just its so cool and im very proud of it. 
+
+(oh yeah on stardance i made a severe mistake by recording this not just ide for the next devlog and then it turns put it doesnt count to hours maybe cuz it counts ide instead but yeah idk, what a pity indeed i thought it would be like the deltavr cuz that one counts hours but its okay atleast i didnt cheat hours or sum by accident that would be bad and if i got banned for an accident that would be fucking harrowing, anyways so ill do commenting for everything nicely so i can make the next devlog <3)
 
 ## Planned Features
 
 - some day i wanna if i can and get the time cuz rn my time is messed up but i wanna fully redesign the ui and do all pixel art by me to match the acutal POM-2 computers in wf.
-
-- mandachord game app maybe perchance, we shall see cuz like its not in the games pom os thing or isnt like related but its a cool idea and my friend suggested it.
 
 ## THANK YOU
 BIG THANKS TO EVERYONE

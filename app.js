@@ -1,19 +1,19 @@
-// --- State & Variables ---
+// --- states and variables here ---
 let highestZIndex = 10;
 let spawnOffset = 0;
-let systemVolume = 0.5; // Base SFX volume
+let systemVolume = 0.5; // base sfx volume
 
-// --- Audio System Setup ---
-const sfxPowerOn = new Audio('static/Pom-2-power-on.mp3'); 
-const sfxPowerOff = new Audio('static/Pom-2-power-off.mp3'); 
-const sfxWinOpen = new Audio('static/Pom-2-window-open.mp3'); 
-const sfxWinClose = new Audio('static/Pom-2-window-close.mp3'); 
-const sfxTyping = new Audio('static/typing.m4a'); // New Typing Sound
-sfxTyping.loop = true; // Loop while typing
-const sfxMessage = new Audio('static/Pom-2-Message-received.mp3'); // Terminal sound
+// --- audio stuffs here ---
+const sfxPowerOn = new Audio('static/Pom-2-power-on.mp3');
+const sfxPowerOff = new Audio('static/Pom-2-power-off.mp3');
+const sfxWinOpen = new Audio('static/Pom-2-window-open.mp3');
+const sfxWinClose = new Audio('static/Pom-2-window-close.mp3');
+const sfxTyping = new Audio('static/typing.m4a'); // typing
+sfxTyping.loop = true; // loop for typing
+const sfxMessage = new Audio('static/Pom-2-Message-received.mp3'); // terminal sound
 const sfxPong = new Audio('static/pong.wav'); // Pong hit sound
-const sfxPongWin = new Audio('static/confettipongwon.mp3'); // Pong win sound
-const sfxPencil = new Audio('static/pencildrawing.mp3'); // Drawing sound
+const sfxPongWin = new Audio('static/confettipongwon.mp3'); // pong win
+const sfxPencil = new Audio('static/pencildrawing.mp3'); // draw sound
 sfxPencil.loop = true;
 
 function updateSysVolume(val) {
@@ -29,29 +29,29 @@ function updateSysVolume(val) {
     sfxPencil.volume = systemVolume;
 }
 
-// Set initial volumes
+// initial other volume
 updateSysVolume(systemVolume);
 
-// --- Typing Sound Hook ---
-// Listens globally for typing in any input or textarea
+// --- typing sound hook thing ---
+// listens globally for typing in any input or textarea
 let typingTimeout;
 document.addEventListener('input', (e) => {
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        // Start or continue playing the looped sound
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // start or continue playing the looped sound
         if (sfxTyping.paused) {
             sfxTyping.play().catch(err => console.log("Audio play blocked."));
         }
-        
-        // Reset the cutoff timer
+
+        // reset the cutoff timer
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
             sfxTyping.pause();
-            sfxTyping.currentTime = 0; // Reset so the next keystroke starts fresh
+            sfxTyping.currentTime = 0; // reset so the next keystroke starts fresh
         }, 200); // 200ms delay to cut off when typing stops
     }
 });
 
-// --- Boot Sequence ---
+// --- boot sequence ---
 window.onload = function () {
     const hasCookies = localStorage.getItem("cookiesAccepted");
     const hasEntered = localStorage.getItem("systemEntered");
@@ -69,7 +69,7 @@ window.onload = function () {
     initMandachord();
 };
 
-// --- Welcome / Login Actions ---
+// --- welcome screen ---
 document.getElementById("cookieBtn").onclick = function () {
     localStorage.setItem("cookiesAccepted", "true");
     const modal = document.getElementById("cookieModal");
@@ -94,7 +94,7 @@ function quitOS() {
     setTimeout(() => { window.location.href = "https://stardance.hackclub.com/"; }, 1000);
 }
 
-// --- Window App Management ---
+// --- window app management ---
 function openApp(id) {
     const appWindow = document.getElementById(id);
     if (!appWindow) return;
@@ -121,7 +121,7 @@ function closeDynamicApp(btnElement) {
     const appWindow = btnElement.closest('.window');
     sfxWinClose.play();
     appWindow.classList.add("closing");
-    setTimeout(() => appWindow.remove(), 200); // Destroy dynamically created windows entirely
+    setTimeout(() => appWindow.remove(), 200); // destroy dynamically created windows
 }
 
 function bringToFront(element) {
@@ -129,9 +129,9 @@ function bringToFront(element) {
     element.style.zIndex = highestZIndex;
 }
 
-// --- Dynamic Image Viewers ---
+// --- image viewers ---
 function openImageViewer(imageSrc, windowId, title) {
-    // Only allow one window per image
+    // only allow one window per image
     if (document.getElementById(windowId)) {
         bringToFront(document.getElementById(windowId));
         return;
@@ -155,7 +155,7 @@ function openImageViewer(imageSrc, windowId, title) {
     bringToFront(newWindow);
 }
 
-// --- Mobile & Desktop Dragging Logic ---
+// --- dragging logic ---
 function makeAllDraggable() {
     document.querySelectorAll(".window").forEach(win => makeDraggable(win));
 }
@@ -167,7 +167,7 @@ function makeDraggable(win) {
     const startDrag = (e) => {
         isDragging = true;
         bringToFront(win);
-        // Handle both mouse and touch
+        // handle both mouse and touch
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         offsetX = clientX - win.getBoundingClientRect().left;
@@ -176,7 +176,7 @@ function makeDraggable(win) {
 
     const drag = (e) => {
         if (!isDragging) return;
-        e.preventDefault(); // VERY IMPORTANT: Stops mobile screen from scrolling while dragging
+        e.preventDefault(); // stops mobile screen from scrolling while dragging (importante alert)
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         win.style.left = (clientX - offsetX) + "px";
@@ -185,18 +185,18 @@ function makeDraggable(win) {
 
     const stopDrag = () => { isDragging = false; };
 
-    // Mouse Listeners
+    // mouse listeners
     header.addEventListener("mousedown", startDrag);
     document.addEventListener("mousemove", drag);
     document.addEventListener("mouseup", stopDrag);
 
-    // Touch Listeners (Mobile)
+    // touch listeners (mobile)
     header.addEventListener("touchstart", startDrag, { passive: false });
     document.addEventListener("touchmove", drag, { passive: false });
     document.addEventListener("touchend", stopDrag);
 }
 
-// --- Notes App Logic ---
+// --- notes app logic ---
 let notes = JSON.parse(localStorage.getItem('pom2_notes'));
 if (!notes) {
     notes = [{
@@ -256,7 +256,7 @@ function createNewNote() {
 }
 function loadNotes() { renderNotesList(); }
 
-// --- Terminal App Logic ---
+// --- terminal app logic ---
 const termInput = document.getElementById('termInput');
 const termOutput = document.getElementById('termOutput');
 
@@ -275,8 +275,8 @@ function printTerm(text, color = "#b5e8b5") {
     div.innerHTML = text;
     div.style.color = color;
     termOutput.appendChild(div);
-    
-    // Play terminal message sound
+
+    // play terminal message sound
     sfxMessage.currentTime = 0;
     sfxMessage.play().catch(e => null);
 }
@@ -328,7 +328,7 @@ function processCommand(cmdLine) {
     }
 }
 
-// --- Music App Logic ---
+// --- music app logic ---
 const musicData = {
     'partyofyourlifetime': { src: 'static/partyofyourlifetime.mp3', artist: 'on-lyne', title: 'Party of Your Lifetime' },
     'thegreatdespair': { src: 'static/thegreatdespair.mp3', artist: 'on-lyne', title: 'The Great Despair' },
@@ -338,12 +338,12 @@ const musicData = {
     'wealllifttogether': { src: 'static/wealllifttogether.mp3', artist: 'Solaris United', title: 'We All Lift Together' }
 };
 
-// --- Window App Management ---
+// --- window app management ---
 function openApp(id) {
     const appWindow = document.getElementById(id);
     if (!appWindow) return;
 
-    // Toggle behavior: If it's already open, close it
+    // toggle behavior: if it's already open, close it
     if (!appWindow.classList.contains("hidden") && !appWindow.classList.contains("closing")) {
         closeApp(id);
         return;
@@ -399,7 +399,7 @@ function musicEnded() {
     playPauseBtn.innerText = "▶";
 }
 
-// --- Pong App Logic ---
+// --- pong app logic ---
 const pongCanvas = document.getElementById('pongCanvas');
 const pongCtx = pongCanvas.getContext('2d');
 
@@ -414,25 +414,25 @@ const ball = { x: 250, y: 175, radius: 6, vx: 5, vy: 5, speed: 5 };
 
 let pongState = 'MENU'; // MENU, PLAYING, WIN
 
-// Keyboard controls
+// keyboard controls
 const keys = { w: false, s: false, ArrowUp: false, ArrowDown: false };
 document.addEventListener('keydown', e => { if (keys.hasOwnProperty(e.key)) keys[e.key] = true; });
 document.addEventListener('keyup', e => { if (keys.hasOwnProperty(e.key)) keys[e.key] = false; });
 
-// Drag handling for player
+// drag handling for player
 let isPongDragging = false;
 pongCanvas.addEventListener('mousedown', (e) => { isPongDragging = true; updatePlayerPos(e); });
 document.addEventListener('mousemove', (e) => { if (isPongDragging) updatePlayerPos(e); });
 document.addEventListener('mouseup', () => isPongDragging = false);
 
-pongCanvas.addEventListener('touchstart', (e) => { isPongDragging = true; updatePlayerPos(e.touches[0]); }, {passive: false});
+pongCanvas.addEventListener('touchstart', (e) => { isPongDragging = true; updatePlayerPos(e.touches[0]); }, { passive: false });
 document.addEventListener('touchmove', (e) => {
     if (isPongDragging) {
         const openWin = document.getElementById('pongApp');
         if (!openWin.classList.contains('hidden')) e.preventDefault();
         updatePlayerPos(e.touches[0]);
     }
-}, {passive: false});
+}, { passive: false });
 document.addEventListener('touchend', () => isPongDragging = false);
 
 function updatePlayerPos(e) {
@@ -475,30 +475,30 @@ function winPong() {
 function updatePong() {
     if (pongState !== 'PLAYING') return;
 
-    // Keyboard movement
+    // keyboard movement
     if (keys.w || keys.ArrowUp) pongPlayer.y -= pongPlayer.speed;
     if (keys.s || keys.ArrowDown) pongPlayer.y += pongPlayer.speed;
     if (pongPlayer.y < 0) pongPlayer.y = 0;
     if (pongPlayer.y > pongCanvas.height - pongPlayer.height) pongPlayer.y = pongCanvas.height - pongPlayer.height;
 
-    // Move Bot (fair tracking logic)
+    // move bot (fair tracking logic)
     const botCenter = pongBot.y + pongBot.height / 2;
     if (botCenter < ball.y - 10) pongBot.y += pongBot.maxSpeed;
     else if (botCenter > ball.y + 10) pongBot.y -= pongBot.maxSpeed;
-    
+
     if (pongBot.y < 0) pongBot.y = 0;
     if (pongBot.y > pongCanvas.height - pongBot.height) pongBot.y = pongCanvas.height - pongBot.height;
 
-    // Move ball
+    // move ball
     ball.x += ball.vx;
     ball.y += ball.vy;
 
-    // Top/bottom wall collisions
+    // top/bottom wall collisions
     if (ball.y - ball.radius < 0 || ball.y + ball.radius > pongCanvas.height) {
         ball.vy = -ball.vy;
     }
 
-    // Player Paddle Collision
+    // player paddle collision
     if (ball.vx < 0 && ball.x - ball.radius <= 20 + pongPlayer.width && ball.y >= pongPlayer.y && ball.y <= pongPlayer.y + pongPlayer.height) {
         ball.vx = -ball.vx;
         ball.vx += 0.5;
@@ -509,21 +509,21 @@ function updatePong() {
             document.getElementById('pongHighScore').innerText = pongHighScore;
         }
         sfxPong.currentTime = 0;
-        sfxPong.play().catch(e=>null);
-        
+        sfxPong.play().catch(e => null);
+
         if (pongScore === 10) winPong();
     }
-    
-    // Bot Paddle Collision
+
+    // bot paddle collision
     const botX = pongCanvas.width - 30;
     if (ball.vx > 0 && ball.x + ball.radius >= botX && ball.y >= pongBot.y && ball.y <= pongBot.y + pongBot.height) {
         ball.vx = -ball.vx;
         ball.vx -= 0.5;
         sfxPong.currentTime = 0;
-        sfxPong.play().catch(e=>null);
+        sfxPong.play().catch(e => null);
     }
 
-    // Out of bounds
+    // out of bounds
     if (ball.x < 0) {
         pongScore = 0;
         resetBall();
@@ -535,7 +535,7 @@ function updatePong() {
 function drawPong() {
     pongCtx.fillStyle = '#111';
     pongCtx.fillRect(0, 0, pongCanvas.width, pongCanvas.height);
-    
+
     if (pongState !== 'PLAYING') return;
 
     pongCtx.setLineDash([10, 15]);
@@ -567,10 +567,10 @@ function loopPong() {
     pongLoop = requestAnimationFrame(loopPong);
 }
 
-// Start loop when pong is loaded
+// start loop when pong is loaded
 loopPong();
 
-// --- Fullscreen Feature ---
+// --- fullscreen feature ---
 function fullscreen() {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(err => {
@@ -581,7 +581,7 @@ function fullscreen() {
     }
 }
 
-// --- File/Music Filter Logic ---
+// --- file/music filter logic ---
 function filterGrid(inputElem) {
     const filter = inputElem.value.toLowerCase();
     const grid = inputElem.closest('.window-content').querySelector('.file-grid');
@@ -597,7 +597,7 @@ function filterGrid(inputElem) {
     }
 }
 
-// --- Calculator Logic ---
+// --- calculator logic ---
 let calcCurrent = "";
 const calcDisplay = document.getElementById('calcDisplay');
 
@@ -623,7 +623,7 @@ function calcEval() {
     }
 }
 
-// --- Drawing App Logic ---
+// --- drawing app logic ---
 const drawCanvas = document.getElementById('drawCanvas');
 const drawCtx = drawCanvas.getContext('2d');
 let drawing = false;
@@ -645,7 +645,7 @@ function toggleEraser() {
         btn.classList.remove('active');
         btn.innerText = "🧹 Eraser: OFF";
     }
-    sfxMessage.currentTime = 0; sfxMessage.play().catch(e=>null);
+    sfxMessage.currentTime = 0; sfxMessage.play().catch(e => null);
 }
 
 function disableEraser() {
@@ -661,12 +661,12 @@ function clearCanvas() {
     if (!drawCtx) return;
     drawCtx.fillStyle = "#ffffff";
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
-    sfxWinOpen.currentTime = 0; sfxWinOpen.play().catch(e=>null);
+    sfxWinOpen.currentTime = 0; sfxWinOpen.play().catch(e => null);
 }
 
 function startPosition(e) {
     drawing = true;
-    sfxPencil.play().catch(e=>null);
+    sfxPencil.play().catch(e => null);
     draw(e);
 }
 function endPosition() {
@@ -677,7 +677,7 @@ function endPosition() {
 }
 function draw(e) {
     if (!drawing || !drawCtx) return;
-    
+
     let clientX, clientY;
     if (e.touches) {
         clientX = e.touches[0].clientX;
@@ -692,7 +692,7 @@ function draw(e) {
     const rect = drawCanvas.getBoundingClientRect();
     const scaleX = drawCanvas.width / rect.width;
     const scaleY = drawCanvas.height / rect.height;
-    
+
     const x = (clientX - rect.left) * scaleX;
     const y = (clientY - rect.top) * scaleY;
 
@@ -716,9 +716,9 @@ if (drawCanvas) {
     drawCanvas.addEventListener('mousemove', draw);
     drawCanvas.addEventListener('mouseleave', endPosition);
 
-    drawCanvas.addEventListener('touchstart', startPosition, {passive: false});
+    drawCanvas.addEventListener('touchstart', startPosition, { passive: false });
     drawCanvas.addEventListener('touchend', endPosition);
-    drawCanvas.addEventListener('touchmove', draw, {passive: false});
+    drawCanvas.addEventListener('touchmove', draw, { passive: false });
 }
 
 function newDrawing() {
@@ -726,7 +726,7 @@ function newDrawing() {
     drawCtx.fillStyle = "#ffffff";
     drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
     document.getElementById('drawTitle').value = "Untitled";
-    sfxWinOpen.currentTime = 0; sfxWinOpen.play().catch(e=>null);
+    sfxWinOpen.currentTime = 0; sfxWinOpen.play().catch(e => null);
 }
 
 function saveDrawing() {
@@ -736,7 +736,7 @@ function saveDrawing() {
     const title = document.getElementById('drawTitle').value || "Untitled";
     drawings.push({ id, title, data: dataURL });
     localStorage.setItem('pom2_drawings', JSON.stringify(drawings));
-    sfxMessage.currentTime = 0; sfxMessage.play().catch(e=>null);
+    sfxMessage.currentTime = 0; sfxMessage.play().catch(e => null);
     renderDrawings();
 }
 
@@ -763,7 +763,7 @@ function renderDrawings() {
 }
 renderDrawings();
 
-// --- Hex Calendar App Logic ---
+// --- hex calendar app logic ---
 let calCurrentDate = new Date();
 let selectedCalDateStr = null;
 let calendarEvents = [];
@@ -776,7 +776,7 @@ const CATEGORY_MAP = {
     special: { name: 'Special', icon: '⭐' }
 };
 
-// Cookie helpers for data persistence backup
+// cookie helpers for data persistence backup
 function setCookie(name, value, days = 365) {
     const d = new Date();
     d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -807,12 +807,12 @@ function loadCalendarEvents() {
             calendarEvents = [];
         }
     } else {
-        // Pre-populate default cozy events (Warframe style + Oxy's Birthday + Hackathon)
+        // pre-populate default cozy events (Warframe style + Oxy's Birthday + Hackathon)
         const today = new Date();
         const year = today.getFullYear();
         const monthStr = String(today.getMonth() + 1).padStart(2, '0');
         const dayNum = today.getDate();
-        
+
         const formatD = (d) => `${year}-${monthStr}-${String(d).padStart(2, '0')}`;
 
         calendarEvents = [
@@ -1172,9 +1172,9 @@ function initMandachord() {
     renderMandachord();
 }
 
-// Canvas Panning & Zoom Handlers
+// canvas panning & zoom handlers
 function handleMandachordMouseDown(e) {
-    if (e.button === 1 || e.button === 2) { // Middle or Right Click to pan
+    if (e.button === 1 || e.button === 2) { // middle or right click to pan
         e.preventDefault();
         isMandaPanning = true;
         mandaPanStartX = e.clientX - mandaPanX;
@@ -1240,13 +1240,13 @@ function resetMandaView() {
     renderMandachord();
 }
 
-// Canvas Rendering
+// canvas rendering
 function renderMandachord() {
     const canvas = document.getElementById('mandachordCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // Ensure high internal buffer resolution (1200x1200) for razor-sharp crispness
+    // ensure high internal buffer resolution (1200x1200) for razor-sharp crispness
     if (canvas.width !== 1200 || canvas.height !== 1200) {
         canvas.width = 1200;
         canvas.height = 1200;
@@ -1259,12 +1259,12 @@ function renderMandachord() {
 
     ctx.clearRect(0, 0, width, height);
 
-    // Apply Zoom & Pan Transformations
+    // apply zoom & pan transformations
     ctx.save();
     ctx.translate(cx + mandaPanX, cy + mandaPanY);
     ctx.scale(mandaZoom, mandaZoom);
 
-    // Background circle container
+    // background circle container
     const bgGlow = ctx.createRadialGradient(0, 0, 50, 0, 0, 520);
     bgGlow.addColorStop(0, '#ede8dc');
     bgGlow.addColorStop(0.7, '#e1d9d0');
@@ -1274,13 +1274,13 @@ function renderMandachord() {
     ctx.arc(0, 0, 530, 0, Math.PI * 2);
     ctx.fill();
 
-    // Wheel angle offset during playback rotation
+    // wheel angle offset during playback rotation
     const wheelAngle = -(mandaStepProgress / 64) * 2 * Math.PI;
 
     ctx.save();
     ctx.rotate(wheelAngle);
 
-    // Radial layout boundaries (scaled to 1200x1200 resolution)
+    // radial layout boundaries (scaled to 1200x1200 resolution)
     function getRowRadii(row) {
         if (row <= 2) {
             const r1 = 510 - (row * 46);
@@ -1301,7 +1301,7 @@ function renderMandachord() {
 
     const anglePerCol = (Math.PI * 2) / 64;
 
-    // Draw 64 columns x 13 rows
+    // draw 64 columns x 13 rows
     for (let col = 0; col < 64; col++) {
         const startAngle = -Math.PI / 2 + col * anglePerCol;
         const endAngle = startAngle + anglePerCol;
@@ -1324,7 +1324,7 @@ function renderMandachord() {
             ctx.closePath();
 
             if (isSelected) {
-                // Percussion is clean white/light-grey box with crisp black symbol
+                // percussion is clean white/light-grey box with crisp black symbol
                 ctx.fillStyle = row <= 2 ? '#e2e8f0' : rowInfo.color;
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
@@ -1339,14 +1339,14 @@ function renderMandachord() {
                 ctx.save();
                 ctx.translate(sx, sy);
                 ctx.rotate(midA + Math.PI / 2);
-                ctx.fillStyle = row <= 2 ? '#000000' : '#0b0d18'; // Black symbol for Percussion!
+                ctx.fillStyle = row <= 2 ? '#000000' : '#0b0d18'; // black symbol for percussion!
                 ctx.font = `bold ${row <= 2 ? 18 : 15}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(rowInfo.symbol, 0, 0);
                 ctx.restore();
             } else {
-                // More contrasting outlines: full opacity, brighter section colours
+                // more contrasting outlines: full opacity, brighter section colours
                 ctx.strokeStyle = row <= 2 ? '#94a3b8' : rowInfo.color;
                 ctx.lineWidth = 1.2;
                 ctx.globalAlpha = 0.85;
@@ -1361,7 +1361,7 @@ function renderMandachord() {
                 ctx.save();
                 ctx.translate(sx, sy);
                 ctx.rotate(midA + Math.PI / 2);
-                // All symbols dark / black against the white background
+                // all symbols dark / black against the white background
                 ctx.fillStyle = row <= 2 ? '#1e293b' : '#0d1117';
                 ctx.font = `${row <= 2 ? 15 : 13}px sans-serif`;
                 ctx.textAlign = 'center';
@@ -1372,7 +1372,7 @@ function renderMandachord() {
         }
     }
 
-    // Section Concentric Rings (Clean White)
+    // section concentric rings (clean white)
     ctx.strokeStyle = '#202121';
     ctx.lineWidth = 2.0;
     [510, 370, 360, 210, 202, 60].forEach(r => {
@@ -1383,7 +1383,7 @@ function renderMandachord() {
         ctx.globalAlpha = 1.0;
     });
 
-    // Subsections 1, 2, 3, 4 (Major white lines at cols 0, 16, 32, 48)
+    // subsections 1, 2, 3, 4 (major white lines at cols 0, 16, 32, 48)
     for (let part = 0; part < 4; part++) {
         const pCol = part * 16;
         const pAngle = -Math.PI / 2 + pCol * anglePerCol;
@@ -1394,7 +1394,7 @@ function renderMandachord() {
         ctx.lineWidth = 2.0;
         ctx.stroke();
 
-        // Label Part Number on outer rim (Clean White)
+        // label part number on outer rim (clean white)
         const labelAngle = pAngle + (8 * anglePerCol);
         const lx = 535 * Math.cos(labelAngle);
         const ly = 535 * Math.sin(labelAngle);
@@ -1409,7 +1409,7 @@ function renderMandachord() {
         ctx.restore();
     }
 
-    // Minor dividing lines every 4 columns (softest white lines)
+    // minor dividing lines every 4 columns (softest white lines)
     for (let c = 0; c < 64; c++) {
         if (c % 16 !== 0 && c % 4 === 0) {
             const subAngle = -Math.PI / 2 + c * anglePerCol;
@@ -1422,25 +1422,25 @@ function renderMandachord() {
         }
     }
 
-    ctx.restore(); // Restore wheel rotation transform (so center hub DOES NOT ROTATE!)
+    ctx.restore(); // restore wheel rotation transform (so center hub DOES NOT ROTATE!)
 
-    // FIXED Non-Rotating Center Hub with FLAT WHITE Play/Pause Icon
+    // fixed non-rotating center hub with flat white play/pause icon
     ctx.beginPath();
     ctx.arc(0, 0, 60, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff'; // Flat solid white, no gradient, no glow!
+    ctx.fillStyle = '#ffffff'; // flat solid white, no gradient, no glow!
     ctx.fill();
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Play / Pause Icon inside fixed center hub (Flat Dark Contrast)
+    // play / pause icon inside fixed center hub (flat dark contrast)
     ctx.fillStyle = '#0b0d17';
     if (mandaPlaying) {
-        // Pause icon (two vertical bars)
+        // pause icon (two vertical bars)
         ctx.fillRect(-14, -16, 10, 32);
         ctx.fillRect(4, -16, 10, 32);
     } else {
-        // Play icon (triangle pointing right)
+        // play icon (triangle pointing right)
         ctx.beginPath();
         ctx.moveTo(-10, -18);
         ctx.lineTo(18, 0);
@@ -1449,7 +1449,7 @@ function renderMandachord() {
         ctx.fill();
     }
 
-    // Top 12 O'Clock Fixed Needle / Playhead Throughline (White)
+    // top 12 o'clock fixed needle / playhead throughline (white)
     ctx.beginPath();
     ctx.moveTo(0, -60);
     ctx.lineTo(0, -540);
@@ -1460,7 +1460,7 @@ function renderMandachord() {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Arrow pointer at top of playhead (White)
+    // arrow pointer at top of playhead (white)
     ctx.beginPath();
     ctx.moveTo(-12, -532);
     ctx.lineTo(12, -532);
@@ -1469,10 +1469,10 @@ function renderMandachord() {
     ctx.fillStyle = '#545757';
     ctx.fill();
 
-    ctx.restore(); // Restore Zoom & Pan transform
+    ctx.restore(); // restore zoom & pan transform
 }
 
-// Canvas Click Handler
+// canvas click handler
 function handleMandachordClick(e) {
     if (isMandaPanning) return;
     const canvas = document.getElementById('mandachordCanvas');
@@ -1487,13 +1487,13 @@ function handleMandachordClick(e) {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
-    // Reverse Pan & Zoom transforms to find world coordinates
+    // reverse pan & zoom transforms to find world coordinates
     const mx = (rawMx - cx - mandaPanX) / mandaZoom;
     const my = (rawMy - cy - mandaPanY) / mandaZoom;
 
     const r = Math.hypot(mx, my);
 
-    // Click center hub (r <= 60) toggles Play / Pause!
+    // click center hub (r <= 60) toggles play / pause!
     if (r <= 60) {
         toggleMandachordPlay();
         return;
@@ -1530,7 +1530,7 @@ function handleMandachordClick(e) {
     renderMandachord();
 }
 
-// Audio Synthesis Engine (Web Audio API)
+// audio synthesis engine (web audio api)
 function getMandaAudioCtx() {
     if (!mandaAudioCtx) {
         mandaAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1557,7 +1557,7 @@ function playMandachordNote(row) {
 
     if (sec === 'percussion') {
         if (rowInfo.noteIndex === 0) {
-            // Hi-Hat
+            // hi-hat
             const bufferSize = ctx.sampleRate * 0.05;
             const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
             const data = buffer.getChannelData(0);
@@ -1582,7 +1582,7 @@ function playMandachordNote(row) {
             noise.start(now);
             noise.stop(now + 0.05);
         } else if (rowInfo.noteIndex === 1) {
-            // Snare
+            // snare
             const osc = ctx.createOscillator();
             const toneEnv = ctx.createGain();
             osc.frequency.setValueAtTime(180, now);
@@ -1610,7 +1610,7 @@ function playMandachordNote(row) {
             noise.start(now);
             noise.stop(now + 0.1);
         } else {
-            // Kick Drum
+            // kick drum
             const osc = ctx.createOscillator();
             const env = ctx.createGain();
             osc.frequency.setValueAtTime(140, now);
@@ -1623,7 +1623,7 @@ function playMandachordNote(row) {
             osc.stop(now + 0.15);
         }
     } else if (sec === 'bass') {
-        // Deep Synth Bass Saw/Tri
+        // deep synth bass saw/tri
         const osc = ctx.createOscillator();
         const filter = ctx.createBiquadFilter();
         const env = ctx.createGain();
@@ -1645,7 +1645,7 @@ function playMandachordNote(row) {
         osc.start(now);
         osc.stop(now + 0.22);
     } else if (sec === 'melody') {
-        // Clean Synth Bell/Lead
+        // clean synth bell/lead
         const osc = ctx.createOscillator();
         const env = ctx.createGain();
 
@@ -1663,7 +1663,7 @@ function playMandachordNote(row) {
     }
 }
 
-// Playback Transport Loop
+// playback transport loop
 function toggleMandachordPlay() {
     mandaPlaying = !mandaPlaying;
     if (mandaPlaying) {
@@ -1728,7 +1728,7 @@ function stopMandachordLoop() {
     renderMandachord();
 }
 
-// Side Control Handlers
+// side control handlers
 function updateMandachordBpm(val) {
     mandaBpm = parseInt(val);
     document.getElementById('mandaBpmVal').innerText = val;
