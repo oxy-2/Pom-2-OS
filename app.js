@@ -1104,14 +1104,22 @@ function deleteCalendarEvent(id) {
     sfxWinClose.play().catch(e => null);
 }
 
-// --- MANDACHORD SYNTH & SEQUENCER ENGINE ---
-let mandaGrid = []; // 64 columns x 13 rows
+// --- mandachooarddd ---
+let mandaGrid = [];
 let mandaPlaying = false;
 let mandaBpm = 120;
-let mandaStepProgress = 0; // Floating point step for smooth wheel rotation animation
+let mandaStepProgress = 0;
 let mandaTimer = null;
 let mandaAudioCtx = null;
-let mandaLoopMode = "FULL"; // FULL, PART1, PART2, PART3, PART4
+let mandaLoopMode = "FULL";
+
+let mandaZoom = 1.0;
+let mandaPanX = 0;
+let mandaPanY = 0;
+let mandaFitMode = "proportional"; // proportional, horizontal
+let isMandaPanning = false;
+let mandaPanStartX = 0;
+let mandaPanStartY = 0;
 
 let mandaVolumes = {
     percussion: 1.0,
@@ -1125,14 +1133,11 @@ let mandaIso = {
     melody: true
 };
 
-// Row Configuration: 13 rows total
-// 0..2: Percussion (Grey tint, symbols: ~, X, II)
-// 3..7: Bass (Cyan tint, symbol: 𝄢)
-// 8..12: Melody (Purple tint, symbol: 𝄽)
+// row: 13 rows total
 const MANDA_ROWS = [
-    { section: 'percussion', symbol: '~', color: '#b0bec5', noteIndex: 0 },
-    { section: 'percussion', symbol: 'X', color: '#b0bec5', noteIndex: 1 },
-    { section: 'percussion', symbol: 'II', color: '#b0bec5', noteIndex: 2 },
+    { section: 'percussion', symbol: '~', color: '#1c1f20', noteIndex: 0 },
+    { section: 'percussion', symbol: 'X', color: '#1c1f20', noteIndex: 1 },
+    { section: 'percussion', symbol: 'II', color: '#1c1f20', noteIndex: 2 },
     { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 130.81 }, // C3
     { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 110.00 }, // A2
     { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 98.00 },  // G2
@@ -1146,22 +1151,92 @@ const MANDA_ROWS = [
 ];
 
 function initMandachord() {
-    // Init empty 64x13 grid
     mandaGrid = [];
     for (let col = 0; col < 64; col++) {
         let colArr = new Array(13).fill(false);
         mandaGrid.push(colArr);
     }
 
-    // Try to load saved composition or cookie
     loadMandachordComposition(true);
 
     const canvas = document.getElementById('mandachordCanvas');
     if (!canvas) return;
 
     canvas.addEventListener('click', handleMandachordClick);
+    canvas.addEventListener('mousedown', handleMandachordMouseDown);
+    canvas.addEventListener('mousemove', handleMandachordMouseMove);
+    window.addEventListener('mouseup', handleMandachordMouseUp);
+    canvas.addEventListener('wheel', handleMandachordWheel, { passive: false });
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-    // Initial render
+    renderMandachord();
+}
+
+// Canvas Panning & Zoom Handlers
+function handleMandachordMouseDown(e) {
+    if (e.button === 1 || e.button === 2) { // Middle or Right Click to pan
+        e.preventDefault();
+        isMandaPanning = true;
+        mandaPanStartX = e.clientX - mandaPanX;
+        mandaPanStartY = e.clientY - mandaPanY;
+    }
+}
+
+function handleMandachordMouseMove(e) {
+    if (isMandaPanning) {
+        e.preventDefault();
+        mandaPanX = e.clientX - mandaPanStartX;
+        mandaPanY = e.clientY - mandaPanStartY;
+        renderMandachord();
+    }
+}
+
+function handleMandachordMouseUp(e) {
+    if (isMandaPanning) {
+        isMandaPanning = false;
+    }
+}
+
+function handleMandachordWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.08 : -0.08;
+    mandaZoom = Math.min(2.5, Math.max(0.6, mandaZoom + delta));
+    const zoomSlider = document.getElementById('mandaZoomSlider');
+    const zoomVal = document.getElementById('mandaZoomVal');
+    if (zoomSlider) zoomSlider.value = mandaZoom;
+    if (zoomVal) zoomVal.innerText = `${Math.round(mandaZoom * 100)}%`;
+    renderMandachord();
+}
+
+function updateMandaZoom(val) {
+    mandaZoom = parseFloat(val);
+    const zoomVal = document.getElementById('mandaZoomVal');
+    if (zoomVal) zoomVal.innerText = `${Math.round(mandaZoom * 100)}%`;
+    renderMandachord();
+}
+
+function updateMandaFitMode(val) {
+    mandaFitMode = val;
+    const canvas = document.getElementById('mandachordCanvas');
+    if (!canvas) return;
+    if (val === 'horizontal') {
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+    } else {
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+    }
+    renderMandachord();
+}
+
+function resetMandaView() {
+    mandaZoom = 1.0;
+    mandaPanX = 0;
+    mandaPanY = 0;
+    const zoomSlider = document.getElementById('mandaZoomSlider');
+    const zoomVal = document.getElementById('mandaZoomVal');
+    if (zoomSlider) zoomSlider.value = 1.0;
+    if (zoomVal) zoomVal.innerText = '100%';
     renderMandachord();
 }
 
@@ -1170,6 +1245,13 @@ function renderMandachord() {
     const canvas = document.getElementById('mandachordCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+
+    // Ensure high internal buffer resolution (1200x1200) for razor-sharp crispness
+    if (canvas.width !== 1200 || canvas.height !== 1200) {
+        canvas.width = 1200;
+        canvas.height = 1200;
+    }
+
     const width = canvas.width;
     const height = canvas.height;
     const cx = width / 2;
@@ -1177,44 +1259,42 @@ function renderMandachord() {
 
     ctx.clearRect(0, 0, width, height);
 
-    // Background glow/shadow
-    const bgGlow = ctx.createRadialGradient(cx, cy, 50, cx, cy, 340);
-    bgGlow.addColorStop(0, '#101424');
-    bgGlow.addColorStop(0.7, '#0b0d18');
-    bgGlow.addColorStop(1, '#05060a');
+    // Apply Zoom & Pan Transformations
+    ctx.save();
+    ctx.translate(cx + mandaPanX, cy + mandaPanY);
+    ctx.scale(mandaZoom, mandaZoom);
+
+    // Background circle container
+    const bgGlow = ctx.createRadialGradient(0, 0, 50, 0, 0, 520);
+    bgGlow.addColorStop(0, '#ede8dc');
+    bgGlow.addColorStop(0.7, '#e1d9d0');
+    bgGlow.addColorStop(1, '#ede8dc');
     ctx.fillStyle = bgGlow;
     ctx.beginPath();
-    ctx.arc(cx, cy, 345, 0, Math.PI * 2);
+    ctx.arc(0, 0, 530, 0, Math.PI * 2);
     ctx.fill();
 
     // Wheel angle offset during playback rotation
     const wheelAngle = -(mandaStepProgress / 64) * 2 * Math.PI;
 
     ctx.save();
-    ctx.translate(cx, cy);
     ctx.rotate(wheelAngle);
 
-    // Radial layout boundaries
-    // Row 0..2 (Percussion): r_outer = 320, r_inner = 230 (each row ~30px)
-    // Row 3..7 (Bass): r_outer = 225, r_inner = 135 (each row ~18px)
-    // Row 8..12 (Melody): r_outer = 130, r_inner = 40 (each row ~18px)
+    // Radial layout boundaries (scaled to 1200x1200 resolution)
     function getRowRadii(row) {
         if (row <= 2) {
-            // Percussion (extended at outer rim)
-            const r1 = 320 - (row * 30);
-            const r2 = 320 - ((row + 1) * 30);
+            const r1 = 510 - (row * 46);
+            const r2 = 510 - ((row + 1) * 46);
             return { rOuter: r1, rInner: r2 };
         } else if (row <= 7) {
-            // Bass (middle ring)
             const bRow = row - 3;
-            const r1 = 225 - (bRow * 18);
-            const r2 = 225 - ((bRow + 1) * 18);
+            const r1 = 360 - (bRow * 30);
+            const r2 = 360 - ((bRow + 1) * 30);
             return { rOuter: r1, rInner: r2 };
         } else {
-            // Melody (compressed at inner core)
             const mRow = row - 8;
-            const r1 = 130 - (mRow * 18);
-            const r2 = 130 - ((mRow + 1) * 18);
+            const r1 = 202 - (mRow * 28);
+            const r2 = 202 - ((mRow + 1) * 28);
             return { rOuter: r1, rInner: r2 };
         }
     }
@@ -1223,11 +1303,9 @@ function renderMandachord() {
 
     // Draw 64 columns x 13 rows
     for (let col = 0; col < 64; col++) {
-        // Start angle at 12 o'clock (-PI/2)
         const startAngle = -Math.PI / 2 + col * anglePerCol;
         const endAngle = startAngle + anglePerCol;
 
-        // Check if this column is currently at 12 o'clock playhead
         let currentNeedleCol = Math.floor((mandaStepProgress % 64 + 64) % 64);
         const isCurrentCol = (col === currentNeedleCol);
 
@@ -1236,25 +1314,23 @@ function renderMandachord() {
             const rowInfo = MANDA_ROWS[row];
             const isSelected = mandaGrid[col][row];
 
-            // Scale notes up slightly when playing under top 12 o'clock needle
-            let scaleFactor = (isCurrentCol && isSelected) ? 1.12 : 1.0;
+            let scaleFactor = (isCurrentCol && isSelected) ? 1.10 : 1.0;
             let drawROuter = rInner + (rOuter - rInner) * scaleFactor;
             let drawRInner = rInner;
 
             ctx.beginPath();
-            ctx.arc(0, 0, Math.max(0, drawROuter), startAngle + 0.005, endAngle - 0.005);
-            ctx.arc(0, 0, Math.max(0, drawRInner), endAngle - 0.005, startAngle + 0.005, true);
+            ctx.arc(0, 0, Math.max(0, drawROuter), startAngle + 0.003, endAngle - 0.003);
+            ctx.arc(0, 0, Math.max(0, drawRInner), endAngle - 0.003, startAngle + 0.003, true);
             ctx.closePath();
 
             if (isSelected) {
-                // Filled selected box with row tint
-                ctx.fillStyle = rowInfo.color;
+                // Percussion is clean white/light-grey box with crisp black symbol
+                ctx.fillStyle = row <= 2 ? '#e2e8f0' : rowInfo.color;
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = isCurrentCol ? 2 : 1;
+                ctx.lineWidth = isCurrentCol ? 3 : 1.5;
                 ctx.stroke();
 
-                // Draw Symbol inside selected box
                 const midR = (drawRInner + drawROuter) / 2;
                 const midA = (startAngle + endAngle) / 2;
                 const sx = midR * Math.cos(midA);
@@ -1263,20 +1339,20 @@ function renderMandachord() {
                 ctx.save();
                 ctx.translate(sx, sy);
                 ctx.rotate(midA + Math.PI / 2);
-                ctx.fillStyle = '#0b0d18'; // Dark contrast on filled bg
-                ctx.font = `bold ${row <= 2 ? 14 : 11}px sans-serif`;
+                ctx.fillStyle = row <= 2 ? '#000000' : '#0b0d18'; // Black symbol for Percussion!
+                ctx.font = `bold ${row <= 2 ? 18 : 15}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(rowInfo.symbol, 0, 0);
                 ctx.restore();
             } else {
-                // Empty outline box
-                ctx.strokeStyle = rowInfo.color;
-                ctx.lineWidth = 0.8;
-                ctx.globalAlpha = 0.35;
+                // More contrasting outlines: full opacity, brighter section colours
+                ctx.strokeStyle = row <= 2 ? '#94a3b8' : rowInfo.color;
+                ctx.lineWidth = 1.2;
+                ctx.globalAlpha = 0.85;
                 ctx.stroke();
+                ctx.globalAlpha = 1.0;
 
-                // Draw Symbol in outline color
                 const midR = (rInner + rOuter) / 2;
                 const midA = (startAngle + endAngle) / 2;
                 const sx = midR * Math.cos(midA);
@@ -1285,131 +1361,159 @@ function renderMandachord() {
                 ctx.save();
                 ctx.translate(sx, sy);
                 ctx.rotate(midA + Math.PI / 2);
-                ctx.fillStyle = rowInfo.color;
-                ctx.font = `${row <= 2 ? 12 : 10}px sans-serif`;
+                // All symbols dark / black against the white background
+                ctx.fillStyle = row <= 2 ? '#1e293b' : '#0d1117';
+                ctx.font = `${row <= 2 ? 15 : 13}px sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(rowInfo.symbol, 0, 0);
                 ctx.restore();
-
-                ctx.globalAlpha = 1.0;
             }
         }
     }
 
-    // Draw Section Dividing Rings & Part Subsections (1, 2, 3, 4)
-    ctx.strokeStyle = '#dfb86c';
-    ctx.lineWidth = 1.5;
-    [320, 230, 225, 135, 130, 40].forEach(r => {
+    // Section Concentric Rings (Clean White)
+    ctx.strokeStyle = '#202121';
+    ctx.lineWidth = 2.0;
+    [510, 370, 360, 210, 202, 60].forEach(r => {
         ctx.beginPath();
         ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.45;
         ctx.stroke();
         ctx.globalAlpha = 1.0;
     });
 
-    // 4 Subsection Dividing Lines and Labels (1, 2, 3, 4) above outer rim line
+    // Subsections 1, 2, 3, 4 (Major white lines at cols 0, 16, 32, 48)
     for (let part = 0; part < 4; part++) {
         const pCol = part * 16;
         const pAngle = -Math.PI / 2 + pCol * anglePerCol;
         ctx.beginPath();
-        ctx.moveTo(40 * Math.cos(pAngle), 40 * Math.sin(pAngle));
-        ctx.lineTo(335 * Math.cos(pAngle), 335 * Math.sin(pAngle));
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.lineWidth = 2;
+        ctx.moveTo(60 * Math.cos(pAngle), 60 * Math.sin(pAngle));
+        ctx.lineTo(530 * Math.cos(pAngle), 530 * Math.sin(pAngle));
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.lineWidth = 2.0;
         ctx.stroke();
 
-        // Label Part Number on outer rim
-        const labelAngle = pAngle + (8 * anglePerCol); // Middle of 16-step part
-        const lx = 335 * Math.cos(labelAngle);
-        const ly = 335 * Math.sin(labelAngle);
+        // Label Part Number on outer rim (Clean White)
+        const labelAngle = pAngle + (8 * anglePerCol);
+        const lx = 535 * Math.cos(labelAngle);
+        const ly = 535 * Math.sin(labelAngle);
         ctx.save();
         ctx.translate(lx, ly);
         ctx.rotate(labelAngle + Math.PI / 2);
-        ctx.fillStyle = '#dfb86c';
-        ctx.font = 'bold 13px sans-serif';
+        ctx.fillStyle = '#202121';
+        ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${part + 1}`, 0, 0);
         ctx.restore();
     }
 
-    // Metallic Warframe Hub Core at Center
+    // Minor dividing lines every 4 columns (softest white lines)
+    for (let c = 0; c < 64; c++) {
+        if (c % 16 !== 0 && c % 4 === 0) {
+            const subAngle = -Math.PI / 2 + c * anglePerCol;
+            ctx.beginPath();
+            ctx.moveTo(60 * Math.cos(subAngle), 60 * Math.sin(subAngle));
+            ctx.lineTo(510 * Math.cos(subAngle), 510 * Math.sin(subAngle));
+            ctx.strokeStyle = 'rgb(46 46 46 / 0.7)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+        }
+    }
+
+    ctx.restore(); // Restore wheel rotation transform (so center hub DOES NOT ROTATE!)
+
+    // FIXED Non-Rotating Center Hub with FLAT WHITE Play/Pause Icon
     ctx.beginPath();
-    ctx.arc(0, 0, 38, 0, Math.PI * 2);
-    const centerGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 38);
-    centerGrad.addColorStop(0, '#e5c158');
-    centerGrad.addColorStop(0.5, '#6e511c');
-    centerGrad.addColorStop(1, '#1a1408');
-    ctx.fillStyle = centerGrad;
+    ctx.arc(0, 0, 60, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff'; // Flat solid white, no gradient, no glow!
     ctx.fill();
-    ctx.strokeStyle = '#dfb86c';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Core symbol
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('┼', 0, 0);
+    // Play / Pause Icon inside fixed center hub (Flat Dark Contrast)
+    ctx.fillStyle = '#0b0d17';
+    if (mandaPlaying) {
+        // Pause icon (two vertical bars)
+        ctx.fillRect(-14, -16, 10, 32);
+        ctx.fillRect(4, -16, 10, 32);
+    } else {
+        // Play icon (triangle pointing right)
+        ctx.beginPath();
+        ctx.moveTo(-10, -18);
+        ctx.lineTo(18, 0);
+        ctx.lineTo(-10, 18);
+        ctx.closePath();
+        ctx.fill();
+    }
 
-    ctx.restore(); // Restore wheel rotation transform
-
-    // Draw Top 12 O'Clock Fixed Needle / Playhead Throughline
+    // Top 12 O'Clock Fixed Needle / Playhead Throughline (White)
     ctx.beginPath();
-    ctx.moveTo(cx, cy - 38);
-    ctx.lineTo(cx, cy - 345);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.shadowColor = '#dfb86c';
-    ctx.shadowBlur = 10;
+    ctx.moveTo(0, -60);
+    ctx.lineTo(0, -540);
+    ctx.strokeStyle = '#545757';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = 'rgb(158 153 153 / 0.8)';
+    ctx.shadowBlur = 12;
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Arrow pointer at top of playhead
+    // Arrow pointer at top of playhead (White)
     ctx.beginPath();
-    ctx.moveTo(cx - 8, cy - 340);
-    ctx.lineTo(cx + 8, cy - 340);
-    ctx.lineTo(cx, cy - 352);
+    ctx.moveTo(-12, -532);
+    ctx.lineTo(12, -532);
+    ctx.lineTo(0, -552);
     ctx.closePath();
-    ctx.fillStyle = '#dfb86c';
+    ctx.fillStyle = '#545757';
     ctx.fill();
+
+    ctx.restore(); // Restore Zoom & Pan transform
 }
 
 // Canvas Click Handler
 function handleMandachordClick(e) {
+    if (isMandaPanning) return;
     const canvas = document.getElementById('mandachordCanvas');
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
 
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const mx = (e.clientX - rect.left) * scaleX;
-    const my = (e.clientY - rect.top) * scaleY;
+    const rawMx = (e.clientX - rect.left) * scaleX;
+    const rawMy = (e.clientY - rect.top) * scaleY;
 
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
-    const dx = mx - cx;
-    const dy = my - cy;
-    const r = Math.hypot(dx, dy);
+    // Reverse Pan & Zoom transforms to find world coordinates
+    const mx = (rawMx - cx - mandaPanX) / mandaZoom;
+    const my = (rawMy - cy - mandaPanY) / mandaZoom;
 
-    if (r < 40 || r > 320) return;
+    const r = Math.hypot(mx, my);
+
+    // Click center hub (r <= 60) toggles Play / Pause!
+    if (r <= 60) {
+        toggleMandachordPlay();
+        return;
+    }
+
+    if (r < 60 || r > 510) return;
 
     let row = -1;
-    if (r >= 230 && r <= 320) {
-        row = Math.floor((320 - r) / 30);
-    } else if (r >= 135 && r < 225) {
-        row = 3 + Math.floor((225 - r) / 18);
-    } else if (r >= 40 && r < 130) {
-        row = 8 + Math.floor((130 - r) / 18);
+    if (r >= 370 && r <= 510) {
+        row = Math.floor((510 - r) / 46);
+    } else if (r >= 210 && r < 360) {
+        row = 3 + Math.floor((360 - r) / 30);
+    } else if (r >= 60 && r < 202) {
+        row = 8 + Math.floor((202 - r) / 28);
     }
 
     if (row < 0 || row > 12) return;
 
     const wheelAngle = -(mandaStepProgress / 64) * 2 * Math.PI;
-    let angle = Math.atan2(dy, dx) - wheelAngle;
+    let angle = Math.atan2(my, mx) - wheelAngle;
 
     let normAngle = (angle - (-Math.PI / 2)) % (Math.PI * 2);
     if (normAngle < 0) normAngle += Math.PI * 2;
@@ -1562,21 +1666,13 @@ function playMandachordNote(row) {
 // Playback Transport Loop
 function toggleMandachordPlay() {
     mandaPlaying = !mandaPlaying;
-    const btn = document.getElementById('mandaPlayBtn');
     if (mandaPlaying) {
-        if (btn) {
-            btn.innerText = '⏸ PAUSE';
-            btn.classList.add('playing');
-        }
         getMandaAudioCtx();
         startMandachordLoop();
     } else {
-        if (btn) {
-            btn.innerText = '▶ PLAY';
-            btn.classList.remove('playing');
-        }
         stopMandachordLoop();
     }
+    renderMandachord();
 }
 
 let lastMandaStepInt = -1;
@@ -1600,8 +1696,9 @@ function startMandachordLoop() {
         else if (mandaLoopMode === 'PART3') { minStep = 32; maxStep = 48; }
         else if (mandaLoopMode === 'PART4') { minStep = 48; maxStep = 64; }
 
+        const range = maxStep - minStep;
         if (mandaStepProgress >= maxStep || mandaStepProgress < minStep) {
-            mandaStepProgress = minStep;
+            mandaStepProgress = minStep + (((mandaStepProgress - minStep) % range + range) % range);
             lastMandaStepInt = -1;
         }
 
@@ -1767,4 +1864,4 @@ function loadMandachordSongPrompt() {
             alert("Error parsing composition string.");
         }
     }
-}
+}

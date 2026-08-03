@@ -300,20 +300,21 @@
                 <div class="window-content mandachord-layout">
                     <!-- Left: Circular Sequencer Area -->
                     <div class="mandachord-main">
-                        <div class="mandachord-title-bar">
-                            <span class="manda-logo-icon">┼</span>
-                            <span class="manda-logo-text">M A N D A C H O R D</span>
-                            <span class="manda-logo-icon">┼</span>
-                        </div>
-                        <div class="mandachord-canvas-wrapper">
-                            <canvas id="mandachordCanvas" width="700" height="700"></canvas>
-                        </div>
-                        <div class="mandachord-transport-bar">
-                            <button id="mandaPlayBtn" class="manda-btn manda-play-btn" onclick="toggleMandachordPlay()">▶ PLAY</button>
-                            <div class="manda-speed-control">
-                                <label>BPM: <span id="mandaBpmVal">120</span></label>
-                                <input type="range" id="mandaBpmSlider" min="60" max="200" value="120" oninput="updateMandachordBpm(this.value)">
+                        <div class="mandachord-view-bar">
+                            <div class="manda-view-controls">
+                                <select id="mandaFitSelect" class="manda-select-sm" onchange="updateMandaFitMode(this.value)">
+                                    <option value="proportional">Fit: Proportional</option>
+                                    <option value="horizontal">Fit: Horizontal (Crop Top/Bot)</option>
+                                </select>
+                                <div class="manda-zoom-group">
+                                    <label>Zoom: <span id="mandaZoomVal">100%</span></label>
+                                    <input type="range" id="mandaZoomSlider" min="0.6" max="2.5" step="0.05" value="1.0" oninput="updateMandaZoom(this.value)">
+                                </div>
+                                <button class="manda-mini-btn" onclick="resetMandaView()">Center</button>
                             </div>
+                        </div>
+                        <div class="mandachord-canvas-wrapper" id="mandaCanvasWrapper">
+                            <canvas id="mandachordCanvas" width="800" height="800"></canvas>
                         </div>
                     </div>
 
@@ -323,7 +324,7 @@
                         <div class="manda-section-header">VOLUME MIXER</div>
                         <div class="manda-control-group">
                             <div class="manda-row">
-                                <span class="manda-label grey-text">II PERCUSSION</span>
+                                <span class="manda-label grey-text">II PERC.</span>
                                 <input type="range" id="volPercussion" min="0" max="100" value="100" oninput="updateMandaVol('percussion', this.value)">
                                 <span class="manda-num" id="valVolPercussion">100</span>
                             </div>
@@ -356,8 +357,8 @@
                             </div>
                         </div>
 
-                        <!-- Loop Mode -->
-                        <div class="manda-section-header">LOOP</div>
+                        <!-- Loop Mode & Tempo -->
+                        <div class="manda-section-header">TEMPO & LOOP</div>
                         <div class="manda-control-group">
                             <div class="manda-row">
                                 <span class="manda-label">LOOP</span>
@@ -368,6 +369,10 @@
                                     <option value="PART3">PART 3</option>
                                     <option value="PART4">PART 4</option>
                                 </select>
+                            </div>
+                            <div class="manda-row">
+                                <span class="manda-label">BPM: <span id="mandaBpmVal">120</span></span>
+                                <input type="range" id="mandaBpmSlider" min="60" max="200" value="120" oninput="updateMandachordBpm(this.value)">
                             </div>
                         </div>
 
