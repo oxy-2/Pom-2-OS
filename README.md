@@ -16,7 +16,7 @@ so i hope whoever is reading this likes my project, ive really tried my best on 
 - **Notes App**: write and save your thoughts. i have a little note from me welcoming you there too (insert bluemoji "Love from the heart")
 
 - **Drawing App (UPDATES TOO)**: a simple, canvas app to sketch, choose color/brush sizes, use the eraser to erase, name your drawings, and save your wonderful art peices. (it has sound effects)
-- 
+
 - **Gallery / File Explorer**: browse a bunch of cool images (Somatic Pods, Jade Shadows, Koumei, Oraxia, Radiation symbol i added there). also theres like a search bar its also in the music player to help like find what your looking for also if i add more stuff then its goog
 
 - **Music Tunes Player**: MUSSIICCC, i added a bunch of new tracks *For Narmer*, *Sleeping in the Cold Below*, *The Call*, and *We All Lift Together*. i haveth a sleek mini-player with a visualizer, pause/play, seeking, and a the same kidna search thing from earlier with the gallery thing.
@@ -29,11 +29,15 @@ so i hope whoever is reading this likes my project, ive really tried my best on 
 
 - **sounds sounds sounds**: i personally added little sounds for booting up, shutting down, window handling, typing, terminal messages, game interactions, drawing and such, i hope you guys like it, i might add some more in the future like one for like clicking
 
+- **kinda functional calendar**: ITS A CALENDAR, didnt actually take me as long as i thought it would to add, its like the game has with the seasons and colors and stuff, you can like mark events and more lol. (also some bdays of mine and people close to me are there)
+
+- ****
+
 ## Planned Features
 
-- maybe like a functional calendar as the game has with the seasons, that would be really cool i think and then oooo i can like mark events important to me like my bday, and my friends bdays and gf bday and more lol, yeah that would be cool, ill add that like tmrw i think.
+- some day i wanna if i can and get the time cuz rn my time is messed up but i wanna fully redesign the ui and do all pixel art by me to match the acutal POM-2 computers in wf.
 
-- Somachord game app maybe perchance, we shall see cuz like its not in the games pom os thing or isnt like related but its a cool idea and my friend suggested it.
+- mandachord game app maybe perchance, we shall see cuz like its not in the games pom os thing or isnt like related but its a cool idea and my friend suggested it.
 
 ## THANK YOU
 BIG THANKS TO EVERYONE

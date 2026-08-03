@@ -66,6 +66,7 @@ window.onload = function () {
     loadNotes();
     makeAllDraggable();
     initCalendar();
+    initMandachord();
 };
 
 // --- Welcome / Login Actions ---
@@ -1102,3 +1103,668 @@ function deleteCalendarEvent(id) {
     sfxWinClose.currentTime = 0;
     sfxWinClose.play().catch(e => null);
 }
+
+// --- MANDACHORD SYNTH & SEQUENCER ENGINE ---
+let mandaGrid = []; // 64 columns x 13 rows
+let mandaPlaying = false;
+let mandaBpm = 120;
+let mandaStepProgress = 0; // Floating point step for smooth wheel rotation animation
+let mandaTimer = null;
+let mandaAudioCtx = null;
+let mandaLoopMode = "FULL"; // FULL, PART1, PART2, PART3, PART4
+
+let mandaVolumes = {
+    percussion: 1.0,
+    bass: 1.0,
+    melody: 1.0
+};
+
+let mandaIso = {
+    percussion: true,
+    bass: true,
+    melody: true
+};
+
+// Row Configuration: 13 rows total
+// 0..2: Percussion (Grey tint, symbols: ~, X, II)
+// 3..7: Bass (Cyan tint, symbol: 𝄢)
+// 8..12: Melody (Purple tint, symbol: 𝄽)
+const MANDA_ROWS = [
+    { section: 'percussion', symbol: '~', color: '#b0bec5', noteIndex: 0 },
+    { section: 'percussion', symbol: 'X', color: '#b0bec5', noteIndex: 1 },
+    { section: 'percussion', symbol: 'II', color: '#b0bec5', noteIndex: 2 },
+    { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 130.81 }, // C3
+    { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 110.00 }, // A2
+    { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 98.00 },  // G2
+    { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 87.31 },  // F2
+    { section: 'bass', symbol: '𝄢', color: '#38bdf8', freq: 73.42 },  // D2
+    { section: 'melody', symbol: '𝄽', color: '#c084fc', freq: 523.25 }, // C5
+    { section: 'melody', symbol: '𝄽', color: '#c084fc', freq: 440.00 }, // A4
+    { section: 'melody', symbol: '𝄽', color: '#c084fc', freq: 392.00 }, // G4
+    { section: 'melody', symbol: '𝄽', color: '#c084fc', freq: 349.23 }, // F4
+    { section: 'melody', symbol: '𝄽', color: '#c084fc', freq: 293.66 }  // D4
+];
+
+function initMandachord() {
+    // Init empty 64x13 grid
+    mandaGrid = [];
+    for (let col = 0; col < 64; col++) {
+        let colArr = new Array(13).fill(false);
+        mandaGrid.push(colArr);
+    }
+
+    // Try to load saved composition or cookie
+    loadMandachordComposition(true);
+
+    const canvas = document.getElementById('mandachordCanvas');
+    if (!canvas) return;
+
+    canvas.addEventListener('click', handleMandachordClick);
+
+    // Initial render
+    renderMandachord();
+}
+
+// Canvas Rendering
+function renderMandachord() {
+    const canvas = document.getElementById('mandachordCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const cx = width / 2;
+    const cy = height / 2;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Background glow/shadow
+    const bgGlow = ctx.createRadialGradient(cx, cy, 50, cx, cy, 340);
+    bgGlow.addColorStop(0, '#101424');
+    bgGlow.addColorStop(0.7, '#0b0d18');
+    bgGlow.addColorStop(1, '#05060a');
+    ctx.fillStyle = bgGlow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 345, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wheel angle offset during playback rotation
+    const wheelAngle = -(mandaStepProgress / 64) * 2 * Math.PI;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(wheelAngle);
+
+    // Radial layout boundaries
+    // Row 0..2 (Percussion): r_outer = 320, r_inner = 230 (each row ~30px)
+    // Row 3..7 (Bass): r_outer = 225, r_inner = 135 (each row ~18px)
+    // Row 8..12 (Melody): r_outer = 130, r_inner = 40 (each row ~18px)
+    function getRowRadii(row) {
+        if (row <= 2) {
+            // Percussion (extended at outer rim)
+            const r1 = 320 - (row * 30);
+            const r2 = 320 - ((row + 1) * 30);
+            return { rOuter: r1, rInner: r2 };
+        } else if (row <= 7) {
+            // Bass (middle ring)
+            const bRow = row - 3;
+            const r1 = 225 - (bRow * 18);
+            const r2 = 225 - ((bRow + 1) * 18);
+            return { rOuter: r1, rInner: r2 };
+        } else {
+            // Melody (compressed at inner core)
+            const mRow = row - 8;
+            const r1 = 130 - (mRow * 18);
+            const r2 = 130 - ((mRow + 1) * 18);
+            return { rOuter: r1, rInner: r2 };
+        }
+    }
+
+    const anglePerCol = (Math.PI * 2) / 64;
+
+    // Draw 64 columns x 13 rows
+    for (let col = 0; col < 64; col++) {
+        // Start angle at 12 o'clock (-PI/2)
+        const startAngle = -Math.PI / 2 + col * anglePerCol;
+        const endAngle = startAngle + anglePerCol;
+
+        // Check if this column is currently at 12 o'clock playhead
+        let currentNeedleCol = Math.floor((mandaStepProgress % 64 + 64) % 64);
+        const isCurrentCol = (col === currentNeedleCol);
+
+        for (let row = 0; row < 13; row++) {
+            const { rOuter, rInner } = getRowRadii(row);
+            const rowInfo = MANDA_ROWS[row];
+            const isSelected = mandaGrid[col][row];
+
+            // Scale notes up slightly when playing under top 12 o'clock needle
+            let scaleFactor = (isCurrentCol && isSelected) ? 1.12 : 1.0;
+            let drawROuter = rInner + (rOuter - rInner) * scaleFactor;
+            let drawRInner = rInner;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, Math.max(0, drawROuter), startAngle + 0.005, endAngle - 0.005);
+            ctx.arc(0, 0, Math.max(0, drawRInner), endAngle - 0.005, startAngle + 0.005, true);
+            ctx.closePath();
+
+            if (isSelected) {
+                // Filled selected box with row tint
+                ctx.fillStyle = rowInfo.color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = isCurrentCol ? 2 : 1;
+                ctx.stroke();
+
+                // Draw Symbol inside selected box
+                const midR = (drawRInner + drawROuter) / 2;
+                const midA = (startAngle + endAngle) / 2;
+                const sx = midR * Math.cos(midA);
+                const sy = midR * Math.sin(midA);
+
+                ctx.save();
+                ctx.translate(sx, sy);
+                ctx.rotate(midA + Math.PI / 2);
+                ctx.fillStyle = '#0b0d18'; // Dark contrast on filled bg
+                ctx.font = `bold ${row <= 2 ? 14 : 11}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(rowInfo.symbol, 0, 0);
+                ctx.restore();
+            } else {
+                // Empty outline box
+                ctx.strokeStyle = rowInfo.color;
+                ctx.lineWidth = 0.8;
+                ctx.globalAlpha = 0.35;
+                ctx.stroke();
+
+                // Draw Symbol in outline color
+                const midR = (rInner + rOuter) / 2;
+                const midA = (startAngle + endAngle) / 2;
+                const sx = midR * Math.cos(midA);
+                const sy = midR * Math.sin(midA);
+
+                ctx.save();
+                ctx.translate(sx, sy);
+                ctx.rotate(midA + Math.PI / 2);
+                ctx.fillStyle = rowInfo.color;
+                ctx.font = `${row <= 2 ? 12 : 10}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(rowInfo.symbol, 0, 0);
+                ctx.restore();
+
+                ctx.globalAlpha = 1.0;
+            }
+        }
+    }
+
+    // Draw Section Dividing Rings & Part Subsections (1, 2, 3, 4)
+    ctx.strokeStyle = '#dfb86c';
+    ctx.lineWidth = 1.5;
+    [320, 230, 225, 135, 130, 40].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+    });
+
+    // 4 Subsection Dividing Lines and Labels (1, 2, 3, 4) above outer rim line
+    for (let part = 0; part < 4; part++) {
+        const pCol = part * 16;
+        const pAngle = -Math.PI / 2 + pCol * anglePerCol;
+        ctx.beginPath();
+        ctx.moveTo(40 * Math.cos(pAngle), 40 * Math.sin(pAngle));
+        ctx.lineTo(335 * Math.cos(pAngle), 335 * Math.sin(pAngle));
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Label Part Number on outer rim
+        const labelAngle = pAngle + (8 * anglePerCol); // Middle of 16-step part
+        const lx = 335 * Math.cos(labelAngle);
+        const ly = 335 * Math.sin(labelAngle);
+        ctx.save();
+        ctx.translate(lx, ly);
+        ctx.rotate(labelAngle + Math.PI / 2);
+        ctx.fillStyle = '#dfb86c';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${part + 1}`, 0, 0);
+        ctx.restore();
+    }
+
+    // Metallic Warframe Hub Core at Center
+    ctx.beginPath();
+    ctx.arc(0, 0, 38, 0, Math.PI * 2);
+    const centerGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, 38);
+    centerGrad.addColorStop(0, '#e5c158');
+    centerGrad.addColorStop(0.5, '#6e511c');
+    centerGrad.addColorStop(1, '#1a1408');
+    ctx.fillStyle = centerGrad;
+    ctx.fill();
+    ctx.strokeStyle = '#dfb86c';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Core symbol
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('┼', 0, 0);
+
+    ctx.restore(); // Restore wheel rotation transform
+
+    // Draw Top 12 O'Clock Fixed Needle / Playhead Throughline
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 38);
+    ctx.lineTo(cx, cy - 345);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#dfb86c';
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Arrow pointer at top of playhead
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy - 340);
+    ctx.lineTo(cx + 8, cy - 340);
+    ctx.lineTo(cx, cy - 352);
+    ctx.closePath();
+    ctx.fillStyle = '#dfb86c';
+    ctx.fill();
+}
+
+// Canvas Click Handler
+function handleMandachordClick(e) {
+    const canvas = document.getElementById('mandachordCanvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    const dx = mx - cx;
+    const dy = my - cy;
+    const r = Math.hypot(dx, dy);
+
+    if (r < 40 || r > 320) return;
+
+    let row = -1;
+    if (r >= 230 && r <= 320) {
+        row = Math.floor((320 - r) / 30);
+    } else if (r >= 135 && r < 225) {
+        row = 3 + Math.floor((225 - r) / 18);
+    } else if (r >= 40 && r < 130) {
+        row = 8 + Math.floor((130 - r) / 18);
+    }
+
+    if (row < 0 || row > 12) return;
+
+    const wheelAngle = -(mandaStepProgress / 64) * 2 * Math.PI;
+    let angle = Math.atan2(dy, dx) - wheelAngle;
+
+    let normAngle = (angle - (-Math.PI / 2)) % (Math.PI * 2);
+    if (normAngle < 0) normAngle += Math.PI * 2;
+
+    const anglePerCol = (Math.PI * 2) / 64;
+    let col = Math.floor(normAngle / anglePerCol) % 64;
+
+    mandaGrid[col][row] = !mandaGrid[col][row];
+
+    if (mandaGrid[col][row]) {
+        playMandachordNote(row);
+    }
+
+    renderMandachord();
+}
+
+// Audio Synthesis Engine (Web Audio API)
+function getMandaAudioCtx() {
+    if (!mandaAudioCtx) {
+        mandaAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (mandaAudioCtx.state === 'suspended') {
+        mandaAudioCtx.resume();
+    }
+    return mandaAudioCtx;
+}
+
+function playMandachordNote(row) {
+    const ctx = getMandaAudioCtx();
+    const rowInfo = MANDA_ROWS[row];
+    const sec = rowInfo.section;
+
+    if (!mandaIso[sec]) return;
+    const gainVal = (mandaVolumes[sec] || 1.0) * (systemVolume || 0.5);
+    if (gainVal <= 0) return;
+
+    const now = ctx.currentTime;
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(gainVal, now);
+    masterGain.connect(ctx.destination);
+
+    if (sec === 'percussion') {
+        if (rowInfo.noteIndex === 0) {
+            // Hi-Hat
+            const bufferSize = ctx.sampleRate * 0.05;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = 7000;
+
+            const env = ctx.createGain();
+            env.gain.setValueAtTime(0.7, now);
+            env.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+            noise.connect(filter);
+            filter.connect(env);
+            env.connect(masterGain);
+
+            noise.start(now);
+            noise.stop(now + 0.05);
+        } else if (rowInfo.noteIndex === 1) {
+            // Snare
+            const osc = ctx.createOscillator();
+            const toneEnv = ctx.createGain();
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            toneEnv.gain.setValueAtTime(0.8, now);
+            toneEnv.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.connect(toneEnv);
+            toneEnv.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.1);
+
+            const bufferSize = ctx.sampleRate * 0.1;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+            const nEnv = ctx.createGain();
+            nEnv.gain.setValueAtTime(0.6, now);
+            nEnv.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            noise.connect(nEnv);
+            nEnv.connect(masterGain);
+            noise.start(now);
+            noise.stop(now + 0.1);
+        } else {
+            // Kick Drum
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+            env.gain.setValueAtTime(1.0, now);
+            env.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc.connect(env);
+            env.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        }
+    } else if (sec === 'bass') {
+        // Deep Synth Bass Saw/Tri
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const env = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(rowInfo.freq, now);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(400, now);
+        filter.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+
+        env.gain.setValueAtTime(0.7, now);
+        env.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        osc.connect(filter);
+        filter.connect(env);
+        env.connect(masterGain);
+
+        osc.start(now);
+        osc.stop(now + 0.22);
+    } else if (sec === 'melody') {
+        // Clean Synth Bell/Lead
+        const osc = ctx.createOscillator();
+        const env = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(rowInfo.freq, now);
+
+        env.gain.setValueAtTime(0.6, now);
+        env.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+        osc.connect(env);
+        env.connect(masterGain);
+
+        osc.start(now);
+        osc.stop(now + 0.25);
+    }
+}
+
+// Playback Transport Loop
+function toggleMandachordPlay() {
+    mandaPlaying = !mandaPlaying;
+    const btn = document.getElementById('mandaPlayBtn');
+    if (mandaPlaying) {
+        if (btn) {
+            btn.innerText = '⏸ PAUSE';
+            btn.classList.add('playing');
+        }
+        getMandaAudioCtx();
+        startMandachordLoop();
+    } else {
+        if (btn) {
+            btn.innerText = '▶ PLAY';
+            btn.classList.remove('playing');
+        }
+        stopMandachordLoop();
+    }
+}
+
+let lastMandaStepInt = -1;
+function startMandachordLoop() {
+    if (mandaTimer) cancelAnimationFrame(mandaTimer);
+
+    let lastTime = performance.now();
+
+    function stepLoop(now) {
+        if (!mandaPlaying) return;
+        const dt = (now - lastTime) / 1000;
+        lastTime = now;
+
+        const stepsPerSec = (mandaBpm / 60) * 4;
+        mandaStepProgress += dt * stepsPerSec;
+
+        let minStep = 0;
+        let maxStep = 64;
+        if (mandaLoopMode === 'PART1') { minStep = 0; maxStep = 16; }
+        else if (mandaLoopMode === 'PART2') { minStep = 16; maxStep = 32; }
+        else if (mandaLoopMode === 'PART3') { minStep = 32; maxStep = 48; }
+        else if (mandaLoopMode === 'PART4') { minStep = 48; maxStep = 64; }
+
+        if (mandaStepProgress >= maxStep || mandaStepProgress < minStep) {
+            mandaStepProgress = minStep;
+            lastMandaStepInt = -1;
+        }
+
+        const currentStepInt = Math.floor(mandaStepProgress);
+        if (currentStepInt !== lastMandaStepInt) {
+            lastMandaStepInt = currentStepInt;
+            const col = currentStepInt % 64;
+            for (let r = 0; r < 13; r++) {
+                if (mandaGrid[col][r]) {
+                    playMandachordNote(r);
+                }
+            }
+        }
+
+        renderMandachord();
+        mandaTimer = requestAnimationFrame(stepLoop);
+    }
+
+    mandaTimer = requestAnimationFrame(stepLoop);
+}
+
+function stopMandachordLoop() {
+    if (mandaTimer) {
+        cancelAnimationFrame(mandaTimer);
+        mandaTimer = null;
+    }
+    renderMandachord();
+}
+
+// Side Control Handlers
+function updateMandachordBpm(val) {
+    mandaBpm = parseInt(val);
+    document.getElementById('mandaBpmVal').innerText = val;
+}
+
+function updateMandaVol(type, val) {
+    mandaVolumes[type] = parseFloat(val) / 100;
+    const labelId = `valVol${type.charAt(0).toUpperCase() + type.slice(1)}`;
+    const el = document.getElementById(labelId);
+    if (el) el.innerText = val;
+}
+
+function toggleMandaIso(type) {
+    mandaIso[type] = !mandaIso[type];
+    const btnId = `iso${type.charAt(0).toUpperCase() + type.slice(1)}Btn`;
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        if (mandaIso[type]) {
+            btn.classList.add('active');
+            btn.innerText = '||| ✓';
+        } else {
+            btn.classList.remove('active');
+            btn.innerText = '||| OFF';
+        }
+    }
+}
+
+function changeMandaLoop(val) {
+    mandaLoopMode = val;
+    if (val === 'PART1') mandaStepProgress = 0;
+    else if (val === 'PART2') mandaStepProgress = 16;
+    else if (val === 'PART3') mandaStepProgress = 32;
+    else if (val === 'PART4') mandaStepProgress = 48;
+    else mandaStepProgress = 0;
+    renderMandachord();
+}
+
+function clearMandachordNotes() {
+    for (let c = 0; c < 64; c++) {
+        for (let r = 0; r < 13; r++) {
+            mandaGrid[c][r] = false;
+        }
+    }
+    renderMandachord();
+}
+
+function copyMandachordNotes() {
+    const jsonStr = JSON.stringify(mandaGrid);
+    navigator.clipboard.writeText(jsonStr).then(() => {
+        alert('Mandachord pattern copied to clipboard!');
+    }).catch(() => {
+        alert('Mandachord pattern copied!');
+    });
+}
+
+function saveMandachordComposition() {
+    const data = {
+        grid: mandaGrid,
+        bpm: mandaBpm,
+        volumes: mandaVolumes,
+        iso: mandaIso,
+        loopMode: mandaLoopMode
+    };
+    const str = JSON.stringify(data);
+    localStorage.setItem('mandachord_saved_song', str);
+
+    document.cookie = "mandachord_saved_song=" + encodeURIComponent(str) + "; path=/; max-age=31536000";
+
+    sfxMessage.currentTime = 0;
+    sfxMessage.play().catch(e => null);
+    alert('Composition saved to Cookies & LocalStorage!');
+}
+
+function reloadMandachordComposition() {
+    loadMandachordComposition(false);
+    renderMandachord();
+    alert('Composition reloaded!');
+}
+
+function loadMandachordComposition(silent = false) {
+    let saved = localStorage.getItem('mandachord_saved_song');
+
+    if (!saved) {
+        const cookies = document.cookie.split(';');
+        for (let c of cookies) {
+            const [k, v] = c.trim().split('=');
+            if (k === 'mandachord_saved_song' && v) {
+                saved = decodeURIComponent(v);
+                break;
+            }
+        }
+    }
+
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (parsed.grid && parsed.grid.length === 64) {
+                mandaGrid = parsed.grid;
+            }
+            if (parsed.bpm) {
+                mandaBpm = parsed.bpm;
+                const bpmSlider = document.getElementById('mandaBpmSlider');
+                const bpmVal = document.getElementById('mandaBpmVal');
+                if (bpmSlider) bpmSlider.value = mandaBpm;
+                if (bpmVal) bpmVal.innerText = mandaBpm;
+            }
+            if (parsed.volumes) mandaVolumes = parsed.volumes;
+            if (parsed.iso) mandaIso = parsed.iso;
+            if (parsed.loopMode) mandaLoopMode = parsed.loopMode;
+        } catch (e) {
+            console.error('Failed parsing saved Mandachord song', e);
+        }
+    }
+}
+
+function loadMandachordSongPrompt() {
+    const input = prompt("Paste Mandachord JSON composition string:");
+    if (input) {
+        try {
+            const parsed = JSON.parse(input);
+            if (Array.isArray(parsed) && parsed.length === 64) {
+                mandaGrid = parsed;
+                renderMandachord();
+                alert("Song loaded successfully!");
+            } else if (parsed.grid && parsed.grid.length === 64) {
+                mandaGrid = parsed.grid;
+                renderMandachord();
+                alert("Song composition loaded!");
+            } else {
+                alert("Invalid Mandachord song format.");
+            }
+        } catch (e) {
+            alert("Error parsing composition string.");
+        }
+    }
+}

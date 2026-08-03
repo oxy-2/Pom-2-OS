@@ -1226,4 +1226,231 @@ input, textarea { font-size: 16px !important; }
     border-radius: 6px;
     cursor: pointer;
 }
-.cal-cancel-btn:hover { background: #888; }
+.cal-cancel-btn:hover { background: #888; }
+
+/* --- MANDACHORD SYNTH APP STYLES --- */
+.mandachord-window {
+    width: 960px;
+    max-width: 95vw;
+    background: rgba(12, 13, 20, 0.96) !important;
+    border: 1px solid rgba(197, 160, 89, 0.4) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(197, 160, 89, 0.15);
+    color: #e0e5ed;
+}
+
+.mandachord-layout {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    padding: 15px;
+    background: radial-gradient(circle at center, #151828 0%, #090a10 100%);
+    overflow-x: auto;
+}
+
+.mandachord-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(8, 9, 14, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 15px;
+    position: relative;
+}
+
+.mandachord-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #dfb86c;
+    text-shadow: 0 0 8px rgba(223, 184, 108, 0.4);
+    margin-bottom: 5px;
+}
+
+.manda-logo-icon {
+    font-size: 0.9rem;
+    color: rgba(223, 184, 108, 0.6);
+}
+
+.mandachord-canvas-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 580px;
+    height: 580px;
+}
+
+#mandachordCanvas {
+    width: 580px;
+    height: 580px;
+    cursor: pointer;
+}
+
+.mandachord-transport-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: rgba(20, 24, 38, 0.8);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 8px;
+}
+
+.manda-btn {
+    background: linear-gradient(135deg, #dfb86c 0%, #9e7932 100%);
+    color: #0b0c10;
+    border: none;
+    padding: 8px 22px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(223, 184, 108, 0.3);
+    transition: 0.2s;
+}
+
+.manda-btn:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 15px rgba(223, 184, 108, 0.6);
+}
+
+.manda-play-btn.playing {
+    background: linear-gradient(135deg, #ff4757 0%, #b31217 100%);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+}
+
+.manda-speed-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+}
+
+.manda-speed-control input[type="range"] {
+    width: 140px;
+    accent-color: #dfb86c;
+}
+
+/* Sidebar Styles */
+.mandachord-sidebar {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(14, 16, 26, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 15px;
+    user-select: none;
+}
+
+.manda-section-header {
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #8a99ad;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+    margin-top: 4px;
+}
+
+.manda-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.manda-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.manda-label {
+    letter-spacing: 1px;
+    flex: 1;
+}
+
+.grey-text { color: #b0bec5; }
+.cyan-text { color: #38bdf8; }
+.purple-text { color: #c084fc; }
+
+.manda-row input[type="range"] {
+    flex: 1.2;
+    height: 4px;
+    accent-color: #dfb86c;
+}
+
+.manda-num {
+    width: 28px;
+    text-align: right;
+    font-family: monospace;
+    color: #cbd5e1;
+}
+
+.manda-toggle-btn {
+    background: rgba(30, 36, 52, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #64748b;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.manda-toggle-btn.active {
+    background: rgba(197, 160, 89, 0.2);
+    border-color: #dfb86c;
+    color: #dfb86c;
+    box-shadow: 0 0 8px rgba(223, 184, 108, 0.3);
+}
+
+.manda-select {
+    background: rgba(20, 24, 38, 0.9);
+    border: 1px solid #dfb86c;
+    color: #dfb86c;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    outline: none;
+    cursor: pointer;
+}
+
+.manda-action-btn {
+    width: 100%;
+    background: rgba(24, 28, 44, 0.8);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    color: #e2e8f0;
+    padding: 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: center;
+}
+
+.manda-action-btn:hover {
+    background: rgba(197, 160, 89, 0.25);
+    border-color: #dfb86c;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(223, 184, 108, 0.3);
+}
+

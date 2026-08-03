@@ -290,11 +290,105 @@
                     </div>
                 </div>
             </div>
+
+            <!-- MANDACHORD WINDOW -->
+            <div class="window hidden mandachord-window" id="mandachordApp">
+                <div class="window-header">
+                    <span>🎼 MANDACHORD</span>
+                    <button class="close-btn" onclick="closeApp('mandachordApp')">✖</button>
+                </div>
+                <div class="window-content mandachord-layout">
+                    <!-- Left: Circular Sequencer Area -->
+                    <div class="mandachord-main">
+                        <div class="mandachord-title-bar">
+                            <span class="manda-logo-icon">┼</span>
+                            <span class="manda-logo-text">M A N D A C H O R D</span>
+                            <span class="manda-logo-icon">┼</span>
+                        </div>
+                        <div class="mandachord-canvas-wrapper">
+                            <canvas id="mandachordCanvas" width="700" height="700"></canvas>
+                        </div>
+                        <div class="mandachord-transport-bar">
+                            <button id="mandaPlayBtn" class="manda-btn manda-play-btn" onclick="toggleMandachordPlay()">▶ PLAY</button>
+                            <div class="manda-speed-control">
+                                <label>BPM: <span id="mandaBpmVal">120</span></label>
+                                <input type="range" id="mandaBpmSlider" min="60" max="200" value="120" oninput="updateMandachordBpm(this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Side Controls Panel -->
+                    <div class="mandachord-sidebar">
+                        <!-- Volume Mixer -->
+                        <div class="manda-section-header">VOLUME MIXER</div>
+                        <div class="manda-control-group">
+                            <div class="manda-row">
+                                <span class="manda-label grey-text">II PERCUSSION</span>
+                                <input type="range" id="volPercussion" min="0" max="100" value="100" oninput="updateMandaVol('percussion', this.value)">
+                                <span class="manda-num" id="valVolPercussion">100</span>
+                            </div>
+                            <div class="manda-row">
+                                <span class="manda-label cyan-text">𝄢 BASS</span>
+                                <input type="range" id="volBass" min="0" max="100" value="100" oninput="updateMandaVol('bass', this.value)">
+                                <span class="manda-num" id="valVolBass">100</span>
+                            </div>
+                            <div class="manda-row">
+                                <span class="manda-label purple-text">𝄽 MELODY</span>
+                                <input type="range" id="volMelody" min="0" max="100" value="100" oninput="updateMandaVol('melody', this.value)">
+                                <span class="manda-num" id="valVolMelody">100</span>
+                            </div>
+                        </div>
+
+                        <!-- Track Isolation -->
+                        <div class="manda-section-header">TRACK ISOLATION</div>
+                        <div class="manda-control-group">
+                            <div class="manda-row">
+                                <span class="manda-label grey-text">II PERCUSSION</span>
+                                <button class="manda-toggle-btn active" id="isoPercussionBtn" onclick="toggleMandaIso('percussion')">||| ✓</button>
+                            </div>
+                            <div class="manda-row">
+                                <span class="manda-label cyan-text">𝄢 BASS</span>
+                                <button class="manda-toggle-btn active" id="isoBassBtn" onclick="toggleMandaIso('bass')">||| ✓</button>
+                            </div>
+                            <div class="manda-row">
+                                <span class="manda-label purple-text">𝄽 MELODY</span>
+                                <button class="manda-toggle-btn active" id="isoMelodyBtn" onclick="toggleMandaIso('melody')">||| ✓</button>
+                            </div>
+                        </div>
+
+                        <!-- Loop Mode -->
+                        <div class="manda-section-header">LOOP</div>
+                        <div class="manda-control-group">
+                            <div class="manda-row">
+                                <span class="manda-label">LOOP</span>
+                                <select id="mandaLoopSelect" class="manda-select" onchange="changeMandaLoop(this.value)">
+                                    <option value="FULL">FULL</option>
+                                    <option value="PART1">PART 1</option>
+                                    <option value="PART2">PART 2</option>
+                                    <option value="PART3">PART 3</option>
+                                    <option value="PART4">PART 4</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <button class="manda-action-btn" onclick="copyMandachordNotes()">COPY NOTES</button>
+                        <button class="manda-action-btn" onclick="clearMandachordNotes()">CLEAR NOTES</button>
+
+                        <!-- Composition Save / Load -->
+                        <div class="manda-section-header">COMPOSITION</div>
+                        <button class="manda-action-btn" onclick="saveMandachordComposition()">SAVE</button>
+                        <button class="manda-action-btn" onclick="reloadMandachordComposition()">RELOAD</button>
+                        <button class="manda-action-btn" onclick="loadMandachordSongPrompt()">LOAD SONG</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div id="taskbar">
             <div class="logo">Pom-2</div>
             <div class="apps">
+                <button class="app-icon" onclick="openApp('mandachordApp')">🎼</button>
                 <button class="app-icon" onclick="openApp('notes')">📝</button>
                 <button class="app-icon" onclick="openApp('terminal')">💻</button>
                 <button class="app-icon" onclick="openApp('explorer')">📁</button>
